@@ -48,9 +48,9 @@ test at spikes/runtime/tests/runtime.test.mjs:84:1
 test at spikes/runtime/tests/runtime.test.mjs:92:1
 ✖ concurrent activation creates only one backend (80.645708ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   2 !== 1
-  
+
       at TestContext.<anonymous> (file:///Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tests/runtime.test.mjs:100:10)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1409:7)
