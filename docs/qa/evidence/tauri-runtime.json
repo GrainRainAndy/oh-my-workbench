@@ -1,0 +1,15 @@
+{
+  "arch": "aarch64",
+  "checks": [
+    "independent ESM mounts two DOM instances",
+    "renderer has no Node process global",
+    "renderer invokes scoped Rust command",
+    "Node backend completes after actual Tauri window destruction",
+    "recreated window retrieves backend result",
+    "unexpected backend termination rejects pending calls while host survives"
+  ],
+  "node": "system Node (WORKBENCH_NODE or PATH); not bundled",
+  "packaged": false,
+  "platform": "macos",
+  "tauri": "2.12.6"
+}

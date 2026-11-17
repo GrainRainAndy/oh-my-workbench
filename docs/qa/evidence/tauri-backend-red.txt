@@ -1,0 +1,12 @@
+   Compiling workbench-tauri-build-probe v0.0.0 (/Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tauri)
+error[E0583]: file not found for module `backend`
+  --> src/main.rs:27:1
+   |
+27 | mod backend;
+   | ^^^^^^^^^^^^
+   |
+   = help: to create the module `backend`, create file "src/backend.rs" or "src/backend/mod.rs"
+   = note: if there is a `mod backend` elsewhere in the crate already, import it with `use crate::...` instead
+
+For more information about this error, try `rustc --explain E0583`.
+error: could not compile `workbench-tauri-build-probe` (bin "workbench-tauri-build-probe" test) due to 1 previous error

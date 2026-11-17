@@ -1,1 +1,8 @@
-{"event":"tauri-ui-ready","instances":2}
+{"event":"verified","name":"independent ESM mounts two DOM instances"}
+{"event":"verified","name":"renderer has no Node process global"}
+{"event":"verified","name":"renderer invokes scoped Rust command"}
+{"at":1794950903820,"event":"window-destroyed"}
+{"closedAt":1794950903820,"completedAt":1794950904608,"event":"job-completed-after-close"}
+{"event":"verified","name":"Node backend completes after actual Tauri window destruction"}
+{"event":"verified","name":"recreated window retrieves backend result"}
+{"event":"verified","name":"unexpected backend termination rejects pending calls while host survives"}

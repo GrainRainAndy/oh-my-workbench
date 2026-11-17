@@ -13,4 +13,4 @@
 
 CPU按全应用进程合计并声明100%=一个逻辑核；RSS合计可能重复计算共享页，另记OS内存指标及口径，不能混作物理独占内存。包括GPU/renderer/所有插件/Node侧车；独立模型服务另列，不偷偷排除Tauri侧车。记录冷/暖缓存、开机后台负载、硬件、架构、构建号与版本。无证据不得宣称Tauri更省电或Electron达预算。
 
-首轮进度与环境阻塞见 [验证记录](../qa/evidence/runtime-progress.md)。Node通用后台、Electron真实窗口与后台、Tauri双实例界面检查已执行；同负载性能及完整阶段验收尚未完成。
+首轮进度与环境阻塞见 [验证记录](../qa/evidence/runtime-progress.md)。Node通用后台、Electron真实窗口与后台、Tauri双实例界面与相同后台关窗检查已执行；同负载性能及完整阶段验收尚未完成。

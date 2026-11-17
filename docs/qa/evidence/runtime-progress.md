@@ -64,3 +64,23 @@ Electron 45.3.4（开发运行，未打包）在macOS arm64真实窗口验证6�
 官方Electron下载文件SHA256核对通过，见electron-checksum.txt；npm安装审计14包报告0漏洞（不等于安全审计或无漏洞保证）。没有修改系统登录项、菜单栏/热键设置或系统代理。两套桌面试验已退出。
 
 S01/S02获得部分真实桌面证据；S03–S06剩余项、发布签名包与同负载性能仍未完成。框架ADR仍未最终冻结。下一步补齐Tauri相同后台工作负载，再测资源占用，而非拿空窗口与Electron比较。
+
+
+## Tauri 后台对等验证（最新）
+
+用户指定GitHub仓库并要求推进Tauri后台后，接入Rust监督的真实Node子进程与JSONL RPC。service.mjs直接复用Electron fixture；相同双视图、800ms任务及10s中断任务。真实WKWebView窗口验证6项通过，退出码0；日志确认Destroyed事件早于completedAt，重开后由前端再次调用Rust命令读回completed=1。终止Node时在途请求返回BACKEND_EXITED，宿主继续记录证据并退出。完整记录见tauri-runtime.json、tauri-run.txt。
+
+Rust测试2项通过（覆盖并发stats/任务、超时后继续、进程结束/停止后调用、非法方法），Node通用9项继续回归。测试先写，初始因backend模块不存在编译失败，保留tauri-backend-red.txt，不冒充逐行为红灯。现在S02已有两栈单后台真实关窗证据；3后台8视图、发布包、升级迁移和长期性能仍未完成。
+
+限制：Tauri使用系统Node（本机26.13.1），Electron嵌入Node24.22.3；UI资源在Tauri构建时嵌入，尚无动态安装包/打包Node运行环境。核心业务代码相同，但这不等于发行形态或性能条件完全一致。控制消息仍是可信小型fixture，没有完整生产SDK/授权/取消/更新模型。
+
+远端origin已按用户要求配置为https://github.com/GrainRainAndy/oh-my-workbench.git，初始化检查为空；本轮只同步spike/m0-runtime，不强制推送或覆盖其他分支。
+
+
+### Tauri本轮审阅后的最终回归
+
+把主动stop故障模拟改为只向子进程发送终止信号，pending失败必须来自真实EOF处理；EOF路径现在回收子进程，避免宿主常驻时留下僵尸。首次窗口与重建窗口统一使用导航过滤，命令同时检查窗口label和实际本地URL。收紧完成时间为严格晚于Destroyed，自动验证启动时清除旧成功报告，失败不能留下上次通过记录。
+
+统一来源校验一度错误拒绝Tauri实际根入口tauri://localhost，真实窗口就绪超时。已新增根URL/文档URL及外部来源负例，观察失败后修复（tauri-origin-red.txt），Rust最终3项通过；随后真实窗口完整6项重新通过、退出码0，tauri-run.txt与tauri-runtime.json为最终证据。
+
+明确保留的试验限制：RPC的timeout限定响应等待，不覆盖stdin写管道堵塞；当前可信小消息fixture没有验证恶意或停止读取的后台。生产运行器需有有界发送队列、消息大小与背压处理，此项不作为本轮通过声明。Cmd+Q走试验专用退出菜单，系统注销/关闭会话等完整生命周期尚未验收。

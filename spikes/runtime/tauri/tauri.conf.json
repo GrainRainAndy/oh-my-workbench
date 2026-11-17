@@ -6,13 +6,7 @@
     "frontendDist": "ui"
   },
   "app": {
-    "windows": [
-      {
-        "title": "Tauri prerequisite probe",
-        "width": 900,
-        "height": 600
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": "default-src 'none'; script-src 'self'; style-src 'none'; base-uri 'none'"
     },

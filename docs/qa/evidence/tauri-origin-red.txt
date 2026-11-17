@@ -1,0 +1,25 @@
+   Compiling workbench-tauri-build-probe v0.0.0 (/Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.10s
+     Running unittests src/main.rs (/tmp/workbench-tauri-target/debug/deps/workbench_tauri_build_probe-3ef8a407e1476bd4)
+
+running 3 tests
+test backend_tests::window_source_allows_only_local_probe_document ... FAILED
+test backend_tests::invalid_method_is_rejected_without_losing_backend ... ok
+test backend_tests::concurrent_requests_timeout_and_crash ... ok
+
+failures:
+
+---- backend_tests::window_source_allows_only_local_probe_document stdout ----
+probe-navigation: tauri://localhost
+
+thread 'backend_tests::window_source_allows_only_local_probe_document' (18178484) panicked at src/backend_tests.rs:67:9:
+tauri://localhost
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    backend_tests::window_source_allows_only_local_probe_document
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+error: test failed, to rerun pass `--bin workbench-tauri-build-probe`

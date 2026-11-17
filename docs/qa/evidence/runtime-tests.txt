@@ -2,15 +2,15 @@
 > test
 > node --test tests/*.test.mjs
 
-✔ discovery reads manifest without executing plugin; rejects paths and symlink escapes (4.007416ms)
-✔ two clients share one backend; disconnecting a client does not end work (133.187208ms)
-✔ backend crash invalidates old clients and never replays a write (140.996083ms)
-✔ deadline stops waiting, not the backend side effect (155.157292ms)
-✔ journal deduplicates submissions and recovers uncertain work without execution (3.871208ms)
-✔ corrupt journal is preserved rather than replaced with empty data (1.005083ms)
-✔ manifest requires string identity, missing and null IDs are rejected (1.661042ms)
-✔ concurrent activation creates only one backend (87.728458ms)
-✔ desktop activation waits for ready and rejects exit/timeout (6.348834ms)
+✔ discovery reads manifest without executing plugin; rejects paths and symlink escapes (3.860958ms)
+✔ two clients share one backend; disconnecting a client does not end work (140.280333ms)
+✔ backend crash invalidates old clients and never replays a write (142.119375ms)
+✔ deadline stops waiting, not the backend side effect (155.354417ms)
+✔ journal deduplicates submissions and recovers uncertain work without execution (3.336417ms)
+✔ corrupt journal is preserved rather than replaced with empty data (0.831125ms)
+✔ manifest requires string identity, missing and null IDs are rejected (1.255666ms)
+✔ concurrent activation creates only one backend (77.091333ms)
+✔ desktop activation waits for ready and rejects exit/timeout (8.61225ms)
 ℹ tests 9
 ℹ suites 0
 ℹ pass 9
@@ -18,4 +18,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 615.129208
+ℹ duration_ms 619.736708
