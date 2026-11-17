@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workbench workspace, design revision 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "revision",
+    "layout",
+    "views",
+    "activePaneId"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "layout": {
+      "$ref": "#/$defs/node"
+    },
+    "activePaneId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "views": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "pluginId",
+          "viewType",
+          "config",
+          "stateVersion",
+          "state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pluginId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"
+          },
+          "viewType": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"
+          },
+          "config": {},
+          "stateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "state": {},
+          "resource": {
+            "$ref": "#/$defs/resource"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "paneId"
+          ],
+          "properties": {
+            "type": {
+              "const": "leaf"
+            },
+            "paneId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "viewInstanceId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "axis",
+            "ratio",
+            "first",
+            "second"
+          ],
+          "properties": {
+            "type": {
+              "const": "split"
+            },
+            "axis": {
+              "enum": [
+                "horizontal",
+                "vertical"
+              ]
+            },
+            "ratio": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "exclusiveMaximum": 1
+            },
+            "first": {
+              "$ref": "#/$defs/node"
+            },
+            "second": {
+              "$ref": "#/$defs/node"
+            }
+          }
+        }
+      ]
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "providerId",
+        "kind",
+        "resourceId",
+        "version"
+      ],
+      "properties": {
+        "providerId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "resourceId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

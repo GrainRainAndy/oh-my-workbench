@@ -1,0 +1,2 @@
+   Compiling workbench-tauri-build-probe v0.0.0 (/Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.20s

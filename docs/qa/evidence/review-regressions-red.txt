@@ -1,0 +1,64 @@
+✔ discovery reads manifest without executing plugin; rejects paths and symlink escapes (3.86225ms)
+✔ two clients share one backend; disconnecting a client does not end work (133.942583ms)
+✔ backend crash invalidates old clients and never replays a write (140.425291ms)
+✔ deadline stops waiting, not the backend side effect (156.453042ms)
+✔ journal deduplicates submissions and recovers uncertain work without execution (3.430417ms)
+✖ corrupt journal is preserved rather than replaced with empty data (1.537584ms)
+✖ manifest requires string identity, missing and null IDs are rejected (1.387083ms)
+✖ concurrent activation creates only one backend (80.645708ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 5
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 605.115875
+
+✖ failing tests:
+
+test at spikes/runtime/tests/runtime.test.mjs:75:1
+✖ corrupt journal is preserved rather than replaced with empty data (1.537584ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tests/runtime.test.mjs:79:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /JOURNAL_NOT_READY/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at spikes/runtime/tests/runtime.test.mjs:84:1
+✖ manifest requires string identity, missing and null IDs are rejected (1.387083ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tests/runtime.test.mjs:88:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /INVALID_MANIFEST/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at spikes/runtime/tests/runtime.test.mjs:92:1
+✖ concurrent activation creates only one backend (80.645708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tests/runtime.test.mjs:100:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

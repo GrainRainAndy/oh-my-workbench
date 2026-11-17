@@ -1,0 +1,3 @@
+electron-v45.3.4-darwin-arm64.zip
+SHA256 f3ac0124c48a6cc3aa9332caca0e913cc478cd3610a378881729ca33452caa72
+Matches npm electron@45.3.4 checksums.json

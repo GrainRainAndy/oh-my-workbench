@@ -1,0 +1,36 @@
+✔ discovery reads manifest without executing plugin; rejects paths and symlink escapes (38.065417ms)
+✔ two clients share one backend; disconnecting a client does not end work (191.646791ms)
+✔ backend crash invalidates old clients and never replays a write (265.866416ms)
+✔ deadline stops waiting, not the backend side effect (231.721334ms)
+✔ journal deduplicates submissions and recovers uncertain work without execution (7.182792ms)
+✔ corrupt journal is preserved rather than replaced with empty data (2.568541ms)
+✔ manifest requires string identity, missing and null IDs are rejected (3.763709ms)
+✔ concurrent activation creates only one backend (97.918667ms)
+✖ desktop activation waits for ready and rejects exit/timeout (0.92ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 978.636625
+
+✖ failing tests:
+
+test at spikes/runtime/tests/runtime.test.mjs:104:1
+✖ desktop activation waits for ready and rejects exit/timeout (0.92ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/shared/activation.mjs' imported from /Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/tests/runtime.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:241:11)
+      at moduleResolve (node:internal/modules/esm/resolve:846:10)
+      at defaultResolve (node:internal/modules/esm/resolve:973:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:728:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766:56)
+      at #resolve (node:internal/modules/esm/loader:690:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:610:35)
+      at node:internal/modules/esm/loader:639:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:582:22) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/grainrain/Developer/GitHub/OhMyWorkbench/spikes/runtime/shared/activation.mjs'
+  }

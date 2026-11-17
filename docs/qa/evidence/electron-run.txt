@@ -1,0 +1,18 @@
+{"time":"2026-11-17T21:00:20.499Z","event":"backend-message","type":"ready"}
+{"time":"2026-11-17T21:00:20.605Z","event":"window-loaded"}
+{"time":"2026-11-17T21:00:20.627Z","event":"verified","name":"independent ESM mounts two DOM instances"}
+{"time":"2026-11-17T21:00:20.627Z","event":"verified","name":"renderer has no Node process global"}
+{"time":"2026-11-17T21:00:20.628Z","event":"backend-message","type":"response","id":1}
+{"time":"2026-11-17T21:00:20.628Z","event":"verified","name":"renderer invokes scoped preload IPC"}
+{"time":"2026-11-17T21:00:20.628Z","event":"backend-message","type":"response","id":3}
+{"time":"2026-11-17T21:00:20.731Z","event":"window-closed","backendAlive":true}
+{"time":"2026-11-17T21:00:20.731Z","event":"no-windows"}
+{"time":"2026-11-17T21:00:21.430Z","event":"backend-message","type":"response","id":2}
+{"time":"2026-11-17T21:00:21.430Z","event":"verified","name":"utilityProcess completes after actual BrowserWindow close"}
+{"time":"2026-11-17T21:00:21.521Z","event":"window-loaded"}
+{"time":"2026-11-17T21:00:21.522Z","event":"backend-message","type":"response","id":4}
+{"time":"2026-11-17T21:00:21.522Z","event":"verified","name":"recreated window retrieves backend result"}
+{"time":"2026-11-17T21:00:21.522Z","event":"backend-message","type":"response","id":6}
+{"time":"2026-11-17T21:00:21.526Z","event":"backend-exit","code":0}
+{"time":"2026-11-17T21:00:21.526Z","event":"verified","name":"backend termination rejects pending calls while host survives"}
+{"time":"2026-11-17T21:00:21.579Z","event":"window-closed","backendAlive":false}

@@ -1,0 +1,24 @@
+{
+  "productName": "Workbench Tauri Build Probe",
+  "version": "0.0.0",
+  "identifier": "local.workbench.tauri-probe",
+  "build": {
+    "frontendDist": "ui"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Tauri prerequisite probe",
+        "width": 900,
+        "height": 600
+      }
+    ],
+    "security": {
+      "csp": "default-src 'none'; script-src 'self'; style-src 'none'; base-uri 'none'"
+    },
+    "withGlobalTauri": true
+  },
+  "bundle": {
+    "active": false
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "passed": 23,
+  "results": [
+    {
+      "name": "01 Initial render: 3 workspaces / 4 panes / no runtime errors",
+      "status": "passed"
+    },
+    {
+      "name": "02 Theme switching",
+      "status": "passed"
+    },
+    {
+      "name": "03 Workspace switching / editable notes retained",
+      "status": "passed"
+    },
+    {
+      "name": "04 Todo add/edit/complete/filter",
+      "status": "passed"
+    },
+    {
+      "name": "05 Calendar edit / invalid time / month / agenda / new event",
+      "status": "passed"
+    },
+    {
+      "name": "06 Pointer resize and undo",
+      "status": "passed"
+    },
+    {
+      "name": "07 Horizontal/vertical split / multiple instances / maximize",
+      "status": "passed"
+    },
+    {
+      "name": "08 Shared todo data with independent view filters",
+      "status": "passed"
+    },
+    {
+      "name": "09 Pane menu swap and drag/drop swap",
+      "status": "passed"
+    },
+    {
+      "name": "10 Plugin disable / placeholder / enable without data loss",
+      "status": "passed"
+    },
+    {
+      "name": "11 Workspace duplicate: fresh IDs, shared data",
+      "status": "passed"
+    },
+    {
+      "name": "12 Delete workspace retains business data",
+      "status": "passed"
+    },
+    {
+      "name": "13 Empty workspace add/close final pane/undo",
+      "status": "passed"
+    },
+    {
+      "name": "14 Command palette keyboard search/execute",
+      "status": "passed"
+    },
+    {
+      "name": "15 Job continues after view closes and workspace changes; result archive idempotent",
+      "status": "passed"
+    },
+    {
+      "name": "16 Job cancellation",
+      "status": "passed"
+    },
+    {
+      "name": "17 Resource links reject javascript: URL",
+      "status": "passed"
+    },
+    {
+      "name": "18 Layout export/import appends without copying business data",
+      "status": "passed"
+    },
+    {
+      "name": "19 Invalid layout rejected, existing workspaces retained",
+      "status": "passed"
+    },
+    {
+      "name": "20 Save/restore serialization; unfinished jobs become interrupted (storage test double)",
+      "status": "passed"
+    },
+    {
+      "name": "21 Self-contained page has no external script/style/frame dependency",
+      "status": "passed"
+    },
+    {
+      "name": "22 Narrow viewport scroll and modal access",
+      "status": "passed"
+    },
+    {
+      "name": "23 No uncaught JavaScript errors across tested interactions",
+      "status": "passed"
+    }
+  ],
+  "runtime_errors": [],
+  "environment": "Chromium via Playwright, direct HTML injection; localStorage test double, no public hosting",
+  "notes": [
+    "Actual file:// localStorage persistence was not exercised because execution browser blocks file and loopback navigation.",
+    "Screenshots use a localStorage-compatible test fixture; no private user data or account access."
+  ]
+}

@@ -1,0 +1,1 @@
+{"event":"tauri-ui-ready","instances":2}

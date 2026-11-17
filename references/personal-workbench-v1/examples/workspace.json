@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "workspace-study",
+  "name": "日常工作",
+  "revision": 0,
+  "layout": {
+    "type": "split",
+    "axis": "horizontal",
+    "ratio": 0.6,
+    "first": {
+      "type": "leaf",
+      "paneId": "pane-calendar",
+      "viewInstanceId": "view-calendar"
+    },
+    "second": {
+      "type": "split",
+      "axis": "vertical",
+      "ratio": 0.5,
+      "first": {
+        "type": "leaf",
+        "paneId": "pane-todo",
+        "viewInstanceId": "view-todo"
+      },
+      "second": {
+        "type": "leaf",
+        "paneId": "pane-whisper",
+        "viewInstanceId": "view-whisper"
+      }
+    }
+  },
+  "views": [
+    {
+      "id": "view-calendar",
+      "pluginId": "core.calendar",
+      "viewType": "core.calendar.week",
+      "config": {
+        "anchor": {
+          "mode": "relative",
+          "value": "thisWeek"
+        }
+      },
+      "stateVersion": 1,
+      "state": {}
+    },
+    {
+      "id": "view-todo",
+      "pluginId": "core.todo",
+      "viewType": "core.todo.list",
+      "config": {
+        "filter": "open"
+      },
+      "stateVersion": 1,
+      "state": {}
+    },
+    {
+      "id": "view-whisper",
+      "pluginId": "local.whisper",
+      "viewType": "local.whisper.main",
+      "config": {},
+      "stateVersion": 1,
+      "state": {}
+    }
+  ],
+  "activePaneId": "pane-calendar"
+}

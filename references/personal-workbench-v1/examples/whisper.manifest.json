@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "local.whisper",
+  "name": "Whisper 本地转写",
+  "version": "0.1.0",
+  "hostApi": ">=0.1.0 <0.2.0",
+  "platforms": [
+    "macos",
+    "windows",
+    "linux"
+  ],
+  "entrypoints": {
+    "ui": "dist/ui.js",
+    "service": "dist/service.js"
+  },
+  "activationEvents": [
+    "onView:local.whisper.main",
+    "onCommand:local.whisper.open",
+    "onJob:local.whisper.transcribe"
+  ],
+  "requestedCapabilities": [
+    {
+      "name": "files.readSelected",
+      "reason": "读取用户主动选择的音频文件"
+    },
+    {
+      "name": "network.request",
+      "reason": "连接已配置的本地转写服务",
+      "scope": {
+        "userConfiguredEndpoint": true
+      }
+    },
+    {
+      "name": "files.writeSelected",
+      "reason": "将结果保存到用户选择的位置"
+    }
+  ],
+  "dependencies": {
+    "optional": {
+      "workbench.resource-catalog": "^1.0.0"
+    }
+  },
+  "contributes": {
+    "views": [
+      {
+        "id": "local.whisper.main",
+        "title": "音频转写",
+        "minWidth": 320,
+        "minHeight": 240
+      }
+    ],
+    "commands": [
+      {
+        "id": "local.whisper.open",
+        "title": "打开音频转写"
+      }
+    ],
+    "jobs": [
+      {
+        "id": "local.whisper.transcribe",
+        "title": "转写音频",
+        "inputSchema": {
+          "type": "object",
+          "required": [
+            "fileRef"
+          ],
+          "properties": {
+            "fileRef": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "resourceKinds": [
+      "transcript"
+    ]
+  }
+}
