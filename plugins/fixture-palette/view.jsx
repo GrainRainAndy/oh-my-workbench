@@ -55,7 +55,13 @@ export default function Palette({config,updateConfig,state,updateState,services,
       }catch(error){setOutput({name,error:error.message.endsWith('FILE_ACCESS_DENIED')?'没有权限读取所选文件。请检查文件的读取权限，或重新选择其他配色文件。':'无法读取配色文件。请选择 1 MiB 以内、含 1 至 32 个以空白分隔的 #RRGGBB 色值的文本，并确认 CSS 配色导出插件已启用。'});}
     }}>从文件生成 CSS</button><button className="job-export" onClick={async()=>{
       if(!submission.current||submission.current.name!==name)submission.current={name,key:crypto.randomUUID()};
-      try{await jobs.submit('export-css',submission.current.key,colors);setReceipt('已提交，可在任务中心查看');submission.current=null;}
+      try{
+        const job=await jobs.submit('export-css',submission.current.key,colors);
+        setReceipt(job.status==='failed'
+          ? `「${job.title}」未派发：${job.result||'请在任务中心查看详情'}`
+          : `已提交「${job.title}」，可在任务中心查看`);
+        submission.current=null;
+      }
       catch{setReceipt('提交未确认，可再次提交查询');}
     }}>后台导出</button></div>{draft!==null&&<div role="alert">「{draft}」保存失败，当前显示上次保存的方案。
       <button onClick={()=>controller.saveDraft().catch(()=>{})}>重试保存</button><button onClick={controller.discardDraft}>放弃更改</button></div>}{receipt&&<p role="status">{receipt}</p>}{output?.name===name&&(output.error?<p role="alert">{output.error}</p>:<CssResult key={output.css} css={output.css}/>)}</div>;

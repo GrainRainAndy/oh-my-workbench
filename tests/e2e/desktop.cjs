@@ -52,6 +52,14 @@ const {tmpdir}=require('node:os');
 const {join}=require('node:path');
 const assert=require('node:assert/strict');
 const dataDir=process.env.WORKBENCH_E2E_TEMP_DIR??mkdtempSync(join(tmpdir(),'workbench-e2e-'));
+if(process.argv.includes('--verify-relaunch')){
+  const {DatabaseSync}=require('node:sqlite');
+  const history=new DatabaseSync(join(dataDir,'jobs.sqlite'));
+  try{
+    const timestamp=Date.UTC(2020,5,15,12);
+    history.prepare("UPDATE jobs SET createdAt=?,updatedAt=? WHERE status='failed'").run(timestamp,timestamp);
+  }finally{history.close();}
+}
 app.setPath('userData',dataDir);
 const deadline=setTimeout(()=>{console.error('Desktop verification timed out');app.exit(1)},20000);
 app.once('browser-window-created',(_event,win)=>{
@@ -113,6 +121,8 @@ app.once('browser-window-created',(_event,win)=>{
 
         await until("document.querySelector('.job-card [data-status=succeeded]')");
         assert.equal(await run("document.querySelectorAll('.job-card').length"),2);
+        assert.ok(await run("Array.from(document.querySelectorAll('.job-card time')).every(time=>time.textContent.includes(String(new Date(time.dateTime).getFullYear())))"));
+        assert.ok(await run("document.querySelector('.job-reason').closest('.job-card').querySelector('time').textContent.includes('2020')"));
         assert.deepEqual(await run("Array.from(document.querySelectorAll('.job-owner'),el=>[el.textContent,el.title])"),
           [['配色板','fixture.palette'],['配色板','fixture.palette']]);
         assert.equal(await run("document.querySelector('.job-reason').textContent"),'服务未启用');
@@ -432,7 +442,9 @@ app.once('browser-window-created',(_event,win)=>{
       await toggleCss(false);
       await run("document.querySelector('.css-export').click()");
       await until("document.querySelector('.palette [role=alert]')");
-      await run("document.querySelector('.job-export').click();document.querySelector('.jobs-link').click()");
+      await run("document.querySelector('.job-export').click()");
+      await until("document.querySelector('.palette [role=status]')?.textContent.includes('已提交「导出配色方案」')");
+      await run("document.querySelector('.jobs-link').click()");
       await until("document.querySelector('.job-reason')?.textContent==='服务未启用'");
       await run("document.querySelector('nav button').click()");
       await toggleCss(true);

@@ -5,6 +5,7 @@ const {join}=require('node:path');
 const {mkdirSync,copyFileSync,writeFileSync,readFileSync}=require('node:fs');
 const {app,BrowserWindow,dialog,ipcMain,powerMonitor}=require('electron');
 const nativeSleep=process.argv.includes('--native-sleep');
+const simulateSleep=process.argv.includes('--simulate-sleep-cycle');
 const register=ipcMain.handle.bind(ipcMain);
 let cancelCalls=0,staleProgress=false;
 ipcMain.handle=(channel,listener)=>register(channel,channel==='jobs:cancel'?async(...args)=>{
@@ -87,7 +88,7 @@ async function verify(){
   let windowsOpened=0;
   const onWindow=()=>{windowsOpened++;};
   app.on('browser-window-created',onWindow);
-  if(!nativeSleep)powerMonitor.emit('resume');
+  if(!nativeSleep&&!simulateSleep)powerMonitor.emit('resume');
   assert.equal(read.get(job.id).status,'running');
   assert.equal(readProgress.get(job.id).percent,25);
   response.end('completed-without-window');
@@ -95,11 +96,16 @@ async function verify(){
   while(read.get(job.id).status==='running'&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,30));
   assert.equal(read.get(job.id).status,'succeeded');
   assert.equal(BrowserWindow.getAllWindows().length,0);
-  if(nativeSleep){
-    console.log('任务已在无窗状态完成。现在可以手动让 Mac 睡眠，再将其唤醒。');
-    await once(powerMonitor,'suspend');
-    const suspendedAt=new Date().toISOString();
-    await once(powerMonitor,'resume');
+  if(nativeSleep||simulateSleep){
+    const cycle=new Promise(resolve=>powerMonitor.once('suspend',()=>{
+      const suspendedAt=new Date().toISOString();
+      powerMonitor.once('resume',()=>resolve(suspendedAt));
+    }));
+    if(simulateSleep){
+      powerMonitor.emit('suspend');
+      powerMonitor.emit('resume');
+    }else console.log('任务已在无窗状态完成。现在可以手动让 Mac 睡眠，再将其唤醒。');
+    const suspendedAt=await cycle;
     console.log(JSON.stringify({suspendedAt,resumedAt:new Date().toISOString()}));
     assert.equal(read.get(job.id).status,'succeeded');
     assert.equal(readProgress.get(job.id).percent,25);
@@ -120,9 +126,9 @@ async function verify(){
   assert.equal(records[0].progress,25);
   assert.equal(records[0].result,'completed-without-window');
   assert.equal(accepted,1);
-  if(nativeSleep){
+  if(nativeSleep||simulateSleep){
     server.close();
-    console.log('真实睡眠唤醒：窗口未自开，任务结果与进度已恢复，后台只接单一次。');
+    console.log(nativeSleep?'真实系统睡眠唤醒通过':'注入的连续 suspend/resume 事件通过');
     return;
   }
   await second.webContents.executeJavaScript("document.querySelector('.jobs-link').click()");

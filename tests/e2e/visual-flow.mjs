@@ -76,9 +76,33 @@ export async function captureFlow({evaluate,send,sessionId,output}){
   await checkControls('split-workspace',[['separator',/^调整左右窗格比例$/],['button',/^后台导出$/],['button',/^记一次$/]]);
   await evaluate("document.querySelector('.job-export').click()");
   await wait("document.querySelector('.palette [role=status]')?.textContent.includes('已提交')");
+  const receipt=await evaluate("document.querySelector('.palette [role=status]').textContent");
   await evaluate("document.querySelector('.jobs-link').click()");
   await wait("!!document.querySelector('[data-status=succeeded]')");
   await evaluate("document.querySelector('.job-card summary').click()");
+  assert.ok(await evaluate(`(async()=>{
+    const [job]=await window.jobs.list();
+    const time=document.querySelector('.job-card time');
+    return Date.parse(time.dateTime)===job.updatedAt &&
+      time.textContent.includes(String(new Date(job.updatedAt).getFullYear()));
+  })()`),'Completed task should display the year of its saved completion time');
+  const taskTitle=await evaluate("document.querySelector('.job-card h3').textContent");
+  assert.ok(receipt.includes('「'+taskTitle+'」'),'Receipt must name the task shown in the job center');
+  assert.ok(await evaluate("document.querySelector('.job-card details[open] pre').textContent.includes('--color-1: #273f39')"));
+  if(process.argv.includes('--compact')){
+    const fits=await evaluate(`(()=>{
+      const card=document.querySelector('.job-card'),title=card.querySelector('h3');
+      const result=card.querySelector('pre'),badge=card.querySelector('[data-status]');
+      const originalTitle=title.textContent,originalResult=result.textContent;
+      try {
+        title.textContent='LongPluginJobName'.repeat(7);
+        result.textContent='x'.repeat(240);
+        return card.scrollWidth<=card.clientWidth && result.scrollWidth<=result.clientWidth &&
+          badge.getBoundingClientRect().right<=card.getBoundingClientRect().right;
+      } finally {title.textContent=originalTitle;result.textContent=originalResult;}
+    })()`);
+    assert.ok(fits,'Long plugin text pushes task content outside the compact card');
+  }
   await capture('job-result');
   await checkControls('job-result',[['heading',/^任务中心$/],['region',/^已结束$/]]);
   await writeFile(join(output,'accessibility.json'),JSON.stringify(accessibility,null,2)+'\n');

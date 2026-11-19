@@ -12,7 +12,7 @@ M0 已有可运行的 macOS Apple Silicon 预览包。桌面端采用 Electron�
 | T05、T06 任务与恢复 | 取消确认、持久化进度、未知结果保留、宿主及插件数据库备份与实际恢复、旧版及未来版本插件库往返恢复；从插件管理页升级、取消、失败定位快照及重试；副本迁移中强杀与恢复指针写入 ENOSPC；有界卷写满后的保存、备份与迁移重试 | 手动备份回执和升级失败入口均已核对 Finder 实际选中路径；原生取消与确认升级均已验证，升级后重新打开工作区并保留旧库原件 |
 | T08–T11 产品与发布 | 已确认 M1 方向，当前构建内含验证插件 | 独立日程、待办、真实 Whisper 转写，以及发布形态验收 |
 
-最近验证的 macOS arm64 预览包为 `release/macos-arm64-oS5nmn/Oh My Workbench.app`，已验证紧凑窗口下从首次 Tab 到创建工作区并载入第一个插件视图的键盘流程。窗格内容滚动时标题栏保持可操作；包内验证了八窗格的左右及嵌套上下拖动、实时比例提示及单次持久化。
+最近验证的 macOS arm64 预览包为 `release/macos-arm64-ocRi16/Oh My Workbench.app`，已验证紧凑窗口下从首次 Tab 到创建工作区并载入第一个插件视图的键盘流程。窗格内容滚动时标题栏保持可操作；包内验证了八窗格的左右及嵌套上下拖动、实时比例提示及单次持久化。
 
 当前分支为 `spike/m0-runtime`。根目录可执行 `npm run build`、`npm test`、`npm run test:desktop` 和 `npm run package:mac`。任务清单内的 pnpm、Vitest 与 Playwright 命令保留为原计划记录。实际执行结果见[运行验证记录](../qa/evidence/runtime-progress.md)。
 

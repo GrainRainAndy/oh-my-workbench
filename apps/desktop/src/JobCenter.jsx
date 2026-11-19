@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 const labels={running:'执行中',succeeded:'已完成',unknown:'结果待确认',failed:'未派发',cancel_requested:'正在请求取消',cancelled:'已取消'};
-const date=new Intl.DateTimeFormat('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const date=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 function CancelJob({id,title,refresh}){
   const inFlight=useRef(false);
   const [confirming,setConfirming]=useState(false);
