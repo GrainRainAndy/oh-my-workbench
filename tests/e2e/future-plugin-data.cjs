@@ -61,10 +61,17 @@ async function verify(){
   await run("document.querySelector('.manage-link').click()");
   const clickUpgrade="Array.from(document.querySelectorAll('.manager button')).find(b=>b.textContent==='检查数据升级')?.click()";
   const {dialog}=require('electron');
+  const nativeCancel=legacy&&process.argv.includes('--native-cancel');
+  const nativeUpgrade=legacy&&process.argv.includes('--native-upgrade');
+  const showNative=dialog.showMessageBoxSync.bind(dialog);
   let response=0,prompts=0;
   dialog.showMessageBoxSync=(_win,options)=>{
     assert.match(options.detail,/版本 0 → 1/);
     prompts++;
+    if((nativeCancel&&prompts===1)||(nativeUpgrade&&prompts===3)){
+      console.log("Waiting for native upgrade decision, pid",process.pid);
+      return showNative(_win,options);
+    }
     return response;
   };
   async function waitForMessage(text){
@@ -74,9 +81,11 @@ async function verify(){
     }
     throw Error('Missing upgrade status '+text);
   }
+  const beforeCheck=readFileSync(restoredFile);
   await run(clickUpgrade);
   await waitForMessage(legacy?'已取消升级':'较新版本');
   assert.equal(prompts,legacy?1:0);
+  assert.deepEqual(readFileSync(restoredFile),beforeCheck);
   assert.equal(await run('(async()=>(await window.backups.list()).length)()'),2);
   if(legacy){
     win.setSize(660,460);

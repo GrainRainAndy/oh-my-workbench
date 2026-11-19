@@ -56,6 +56,13 @@ async function verify(){
     return prefix.scrollWidth>prefix.clientWidth && suffix.getBoundingClientRect().right<=button.getBoundingClientRect().right
       && label.textContent===button.getAttribute('aria-label') && label.title.endsWith(suffix.textContent);
   })()`));
+  await run("document.querySelector('.skip-navigation').focus()");
+  assert.ok(await run("document.activeElement.getBoundingClientRect().left>=0"));
+  win.webContents.sendInputEvent({type:'keyDown',keyCode:'Return'});
+  win.webContents.sendInputEvent({type:'keyUp',keyCode:'Return'});
+  for(let i=0;i<40&&!await run("document.activeElement.matches('main')");i++)await delay(25);
+  assert.ok(await run("document.activeElement.matches('main') && document.querySelector('.skip-navigation').getBoundingClientRect().right<0"));
+  await run("document.querySelector('nav button:last-child').focus()");
   const focusedName=await run("document.activeElement.getAttribute('aria-label')");
   await run("document.activeElement.click()");
   for(let i=0;i<100&&!await run("document.querySelector('h1').textContent==="+JSON.stringify(focusedName));i++)await delay(25);

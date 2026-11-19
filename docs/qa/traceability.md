@@ -32,7 +32,7 @@ R11/R19 手动备份回执的 Finder 定位已在 1DGsWF 包内验证，实际�
 
 | 需求 | 已执行的路径 | 仍需单独验收 |
 |---|---|---|
-| R11、R19 | 升级失败后保留活动库，支持快照定位与重试。32 MiB HFS+ 卷实测覆盖备份开始前及复制中写满、旧快照校验、释放空间后重试。[桌面升级](../../tests/e2e/future-plugin-data.cjs) · [有界卷测试](../../tests/e2e/full-volume.mjs) | 原生升级确认框操作。两个定位入口的 Finder 选中路径均已验证。 |
+| R11、R19 | 升级失败后保留活动库，支持快照定位与重试。32 MiB HFS+ 卷实测覆盖备份开始前及复制中写满、旧快照校验、释放空间后重试。[桌面升级](../../tests/e2e/future-plugin-data.cjs) · [有界卷测试](../../tests/e2e/full-volume.mjs) | 已验证原生确认升级、取消返回后的数据与备份数量，以及两个定位入口的 Finder 选中路径。 |
 | R12 | 文件读取委托、模式位拒绝及恢复权限后的重试已验证。Electron 系统加密测试覆盖跨插件拒绝、备份排除与恢复后撤销仍有效。[文件委托](../../tests/e2e/delegated-file.cjs) · [系统凭据](../../tests/e2e/system-credentials.cjs) | 原生选择器、macOS 隐私授权弹窗、真实插件消费凭据。 |
 | R13 | 登录原因注入覆盖静默启动，原生热键注册覆盖跨进程争用及释放后重试。[启动用例](../../tests/e2e/login-startup.cjs) · [热键用例](../../tests/e2e/shortcut-settings.cjs) | 实际注销后登录、实体按键唤窗。此前 60 秒观测未确认实体输入。 |
 | R18 | 7200 秒开关窗周期共 25 个样本。注入 resume 后任务中心从持久记录刷新进度，接单数保持不变。[进程数据](evidence/window-cycles-zB4oIK/processes.csv) · [分组汇总](evidence/window-cycles-zB4oIK/summary.json) · [唤醒处理](../../tests/e2e/no-window.cjs) | 物理睡眠唤醒事件投递及辅助技术实际操作。 |

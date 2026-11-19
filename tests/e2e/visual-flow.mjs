@@ -37,13 +37,24 @@ export async function captureFlow({evaluate,send,sessionId,output}){
   }
   await capture('welcome');
   await checkControls('welcome',[['button',/新建工作区/],['button',/^导入布局$/]]);
-  await evaluate("document.querySelector('.welcome .plugin').click()");
+  async function press(key,keyCode){
+    for(const type of ['keyDown','keyUp'])
+      await send('Input.dispatchKeyEvent',{type,key,code:key,windowsVirtualKeyCode:keyCode,
+        text:type==='keyDown'&&key==='Enter'?'\r':''},sessionId);
+  }
+  await send('Page.bringToFront',{},sessionId);
+  await press('Tab',9);
+  await wait("document.activeElement.matches('.skip-navigation')");
+  await press('Enter',13);
+  await wait("document.activeElement.matches('main')");
+  await press('Tab',9);
+  await wait("document.activeElement.matches('.welcome .plugin')");
+  await press('Enter',13);
   await wait("!!document.querySelector('dialog input')");
   await checkControls('create-dialog',[['dialog',/^新建工作区$/],['textbox',/^工作区名称$/],['button',/^创建$/]]);
-  await evaluate(`{const input=document.querySelector('dialog input');
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'设计工作区');
-    input.dispatchEvent(new Event('input',{bubbles:true}));}`);
-  await evaluate("document.querySelector('dialog form').requestSubmit()");
+  await wait("document.activeElement.matches('dialog input')");
+  await send('Input.insertText',{text:'设计工作区'},sessionId);
+  await press('Enter',13);
   await wait("!!document.querySelector('.view-choice:enabled')");
   if(process.argv.includes('--compact')){
     assert.ok(await evaluate(`(()=>{
@@ -54,7 +65,8 @@ export async function captureFlow({evaluate,send,sessionId,output}){
   }
   await capture('choose-view');
   await checkControls('choose-view',[['button',/^配色板/],['button',/^计数器/],['button',/^计数概览/],['button',/^左右切分$/]]);
-  await evaluate("document.querySelector('.view-choice').click()");
+  await wait("document.activeElement===document.querySelector('.view-choice')");
+  await press('Enter',13);
   await wait("!!document.querySelector('.swatches')");
   await evaluate("document.querySelector('[aria-label=左右切分]').click()");
   await wait("!!document.querySelector('.view-choice:enabled')");

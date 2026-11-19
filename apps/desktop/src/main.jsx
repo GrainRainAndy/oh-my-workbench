@@ -190,6 +190,12 @@ function App(){
   const [failedLayout,setFailedLayout]=useState(null);
   const committed=React.useRef(new Map());
   const w=items.find(item=>item.id===active);
+  const focusCreatedWorkspace=React.useRef(null);
+  useEffect(()=>{
+    if(dialog||busy||!active||focusCreatedWorkspace.current!==active)return;
+    focusCreatedWorkspace.current=null;
+    document.querySelector('.pane[data-active] .view-choices button:enabled')?.focus();
+  },[dialog,busy,active]);
   const [initialized,setInitialized]=useState(false);
   async function loadDesktop(){
     setBusy(true);
@@ -273,6 +279,7 @@ function App(){
     }
     const snapshot=dialog==='rename'?{...current,name}:dialog==='duplicate'?duplicateWorkspace(current,name):newWorkspace(name);
     await save(snapshot,true);
+    if(dialog==='create')focusCreatedWorkspace.current=snapshot.id;
   }
   async function transfer(mode){
     setBusy(true);setNotice('');setError('');setImportError('');
@@ -366,7 +373,7 @@ function App(){
     setManager(false);
     requestAnimationFrame(()=>document.querySelector('nav button[aria-current="page"], .welcome button')?.focus());
   }}><span aria-hidden="true">← </span>{w?'返回工作区':'返回首页'}</button>;
-  return <div className="app"><aside><div className="brand"><b>W</b> Workbench</div><div className="sidehead">工作区<button aria-label="新建工作区" disabled={busy} onClick={()=>setDialog('create')}>＋</button></div><nav aria-label="工作区列表" onKeyDown={navigateWorkspaceList}>{items.map(x=><button key={x.id} aria-label={x.name} disabled={busy} aria-current={!manager&&active===x.id?'page':undefined} onClick={()=>{if(manager||active!==x.id)beforeLeaving(()=>{setManager(false);setActive(x.id);});}}><span aria-hidden="true">▦</span><WorkspaceName name={x.name}/></button>)}</nav><footer><button className="jobs-link" aria-pressed={manager==='jobs'} onClick={()=>beforeLeaving(()=>setManager('jobs'))}>任务中心</button><button className="manage-link" aria-pressed={manager===true} onClick={()=>beforeLeaving(()=>setManager(manager!==true))}>插件管理</button><Appearance/><span className="dot"/> 本地工作台</footer></aside><main><div className="window-drag-region" aria-hidden="true"/>{safeMode&&<div className="safe-mode" role="status"><strong>安全模式</strong><span id="safe-mode-explanation">{manager===true?'本次启动已暂停所有插件。开关设置会保存，并在下次正常启动时生效。':'插件执行已暂停。可在插件管理中停用故障项，再正常启动工作台。'}</span></div>}{notice&&<p role="status" className="transfer-notice">{typeof notice==='string'?notice:notice.message}{notice.workspaceId&&notice.workspaceId!==active&&items.some(item=>item.id===notice.workspaceId)&&<button className="open-import" disabled={busy} onClick={()=>beforeLeaving(()=>{
+  return <div className="app"><a className="skip-navigation" href="#workspace-content" onClick={event=>{event.preventDefault();document.getElementById('workspace-content').focus();}}>跳到主要内容</a><aside><div className="brand"><b>W</b> Workbench</div><div className="sidehead">工作区<button aria-label="新建工作区" disabled={busy} onClick={()=>setDialog('create')}>＋</button></div><nav aria-label="工作区列表" onKeyDown={navigateWorkspaceList}>{items.map(x=><button key={x.id} aria-label={x.name} disabled={busy} aria-current={!manager&&active===x.id?'page':undefined} onClick={()=>{if(manager||active!==x.id)beforeLeaving(()=>{setManager(false);setActive(x.id);});}}><span aria-hidden="true">▦</span><WorkspaceName name={x.name}/></button>)}</nav><footer><button className="jobs-link" aria-pressed={manager==='jobs'} onClick={()=>beforeLeaving(()=>setManager('jobs'))}>任务中心</button><button className="manage-link" aria-pressed={manager===true} onClick={()=>beforeLeaving(()=>setManager(manager!==true))}>插件管理</button><Appearance/><span className="dot"/> 本地工作台</footer></aside><main id="workspace-content" tabIndex={-1}><div className="window-drag-region" aria-hidden="true"/>{safeMode&&<div className="safe-mode" role="status"><strong>安全模式</strong><span id="safe-mode-explanation">{manager===true?'本次启动已暂停所有插件。开关设置会保存，并在下次正常启动时生效。':'插件执行已暂停。可在插件管理中停用故障项，再正常启动工作台。'}</span></div>}{notice&&<p role="status" className="transfer-notice">{typeof notice==='string'?notice:notice.message}{notice.workspaceId&&notice.workspaceId!==active&&items.some(item=>item.id===notice.workspaceId)&&<button className="open-import" disabled={busy} onClick={()=>beforeLeaving(()=>{
     setActive(notice.workspaceId);setManager(false);setNotice('');
   })}>打开工作区</button>}<button aria-label="关闭提示" onClick={()=>setNotice('')}>×</button></p>}{importError&&<div role="alert" className="workspace-error import-error"><span>{importError}</span><button disabled={busy} onClick={()=>transfer('import')}>重新选择布局文件</button><button aria-label="关闭导入提示" onClick={()=>setImportError('')}>×</button></div>}{error&&<div role="alert" className="workspace-error"><span>{error.replace(/^Error invoking remote method '[^']+': Error: /,'')}</span>
       {!manager&&error.includes('存储空间不足')&&failedLayout&&failedLayout.id===w?.id&&failedLayout.revision===w.revision&&<button disabled={busy} onClick={()=>beforeLeaving(()=>saveLayout(failedLayout),'layout-change')}>重试保存布局</button>}
