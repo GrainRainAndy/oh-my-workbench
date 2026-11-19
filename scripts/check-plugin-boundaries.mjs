@@ -9,14 +9,21 @@ function inside(directory,path){
   const part=relative(directory,path);
   return part!== '..' && !part.startsWith('..'+sep) && !isAbsolute(part);
 }
-function* files(directory){
+function* files(directory,plugin,root,errors){
   for(const entry of readdirSync(directory,{withFileTypes:true})){
     const filename=join(directory,entry.name);
-    if(entry.isDirectory() && entry.name!=='node_modules')yield* files(filename);
+    if(entry.isSymbolicLink()){
+      if(!existsSync(filename)||!inside(plugin,realpathSync(filename))){
+        errors.push(relative(root,filename)+' 符号链接未指向插件内的文件或目录');
+        continue;
+      }
+    }
+    if(entry.isDirectory() && entry.name!=='node_modules')yield* files(filename,plugin,root,errors);
     else if(/\.[cm]?[jt]sx?$/.test(entry.name))yield filename;
   }
 }
 export function inspectPlugins(root=project){
+  root=realpathSync(root);
   const errors=[];
   const sdk=join(root,'packages/sdk/src/index.ts');
   const pkg=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
@@ -24,7 +31,7 @@ export function inspectPlugins(root=project){
   for(const entry of readdirSync(join(root,'plugins'),{withFileTypes:true})){
     if(!entry.isDirectory())continue;
     const plugin=join(root,'plugins',entry.name);
-    for(const file of files(plugin)){
+    for(const file of files(plugin,plugin,root,errors)){
       const source=ts.createSourceFile(file,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true);
       function check(specifier){
         if(!specifier)return;

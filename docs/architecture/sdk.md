@@ -64,7 +64,7 @@ config 更新流程：schema 校验→controller updateConfig 预应用→宿主
 
 随包服务首个可执行子集使用 usesServices 声明消费方的服务 ID 与精确版本，services 声明提供方的方法和输入输出类型。视图通过 services.call(id, version, method, input) 异步调用，宿主从持久化视图实例查找所属插件，并核对双方启用状态、声明与载荷。当前支持 string 与 string[]。共享可信 renderer 内的实例标识用于路由，不提供恶意 UI 隔离。服务按需启动 Electron utilityProcess，视图卸载不停止进程，停用提供方结束当前世代。
 
-T05 首个路径：manifest.jobs 声明 type/title 及执行所需的版本化 service/method。视图通过 jobs.submit(type,key,input) 注册任务，主进程从已存视图解析所有者。当前输入为有限大小的字符串数组，结果为有限大小的字符串。SQLite 以 owner/jobType/requestKey 唯一并保存输入摘要；相同键不同输入报冲突。桌面任务中心先订阅变更再读取，视图卸载仅解除 UI 订阅。运行中记录在重新打开日志时进入 unknown，不重新派发。
+T05 首个路径：manifest.jobs 声明 type/title 及执行所需的版本化 service/method。视图通过 jobs.submit(type,key,input) 注册任务，主进程从已存视图解析所有者。当前输入为最多 256 项的连续字符串数组，序列化为 JSON 后最多 65,536 字节。提交时复制输入，派发与摘要均使用此副本。结果为最多 65,536 字节的字符串。SQLite 以 owner/jobType/requestKey 唯一并保存输入摘要；相同键不同输入报冲突。桌面任务中心先订阅变更再读取，视图卸载仅解除 UI 订阅。运行中记录在重新打开日志时进入 unknown，不重新派发。
 
 任务派发前由宿主确认的拒绝记 failed，并记录宿主生成的原因。派发后超时、进程退出、结果不符合契约或插件抛错仍记 unknown；后续需处理器对账才能进一步确认。
 

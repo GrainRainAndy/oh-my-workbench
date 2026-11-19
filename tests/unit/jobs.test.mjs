@@ -88,3 +88,19 @@ test('progress is monotonic, revisioned and survives an interrupted run',async()
     assert.equal(db.list()[0].progress,40);
   }finally{db.close();rmSync(dir,{recursive:true});}
 });
+
+test('dispatch uses the validated input snapshot recorded under the submission key',async()=>{
+  const store=registry.openJobs(':memory:',{execute:(_owner,_job,input)=>input.join(',')});
+  try{
+    assert.throws(()=>store.submit('a',job,'sparse',Array(2)),/输入格式/);
+    assert.deepEqual(store.list(),[]);
+    const input=['original'];
+    const receipt=store.submit('a',job,'stable',input);
+    input[0]='changed';
+    await new Promise(resolve=>setImmediate(resolve));
+    const same=store.submit('a',job,'stable',['original']);
+    assert.equal(same.id,receipt.id);
+    assert.equal(same.result,'original');
+    assert.throws(()=>store.submit('a',job,'stable',input),/标识冲突/);
+  }finally{store.close();}
+});

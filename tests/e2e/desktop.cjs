@@ -564,8 +564,11 @@ app.once('browser-window-created',(_event,win)=>{
       await until("[...document.querySelectorAll('.tally-view output')].filter(o=>o.textContent==='1').length===2");
       await run("document.querySelector('.tally-view .plugin').click()");
       await until("[...document.querySelectorAll('.tally-view output')].filter(o=>o.textContent==='2').length===2");
-      await run("document.querySelectorAll('[aria-label=关闭窗格]')[1].click()");
+      await run("document.querySelectorAll('[aria-label=窗格操作]')[1].focus();document.activeElement.click()");
+      await until("!!document.querySelector('.pane-options:modal')");
+      await run("Array.from(document.querySelectorAll('.pane-options button')).find(b=>b.textContent==='关闭窗格').click()");
       await until("document.querySelectorAll('.tally-view').length===1");
+      await until("document.activeElement.matches('.pane[data-active] .pane-title')");
       const savedTallyView=await run("(async()=>Object.values((await window.workspaces.list()).find(w=>w.name==='最近使用').views)[0])()");
       assert.deepEqual(savedTallyView.config,{});
       assert.deepEqual(savedTallyView.state,{});

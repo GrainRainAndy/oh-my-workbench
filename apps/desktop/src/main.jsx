@@ -298,8 +298,13 @@ function App(){
     return saveLayout(snapshot);
   }
   async function saveLayout(snapshot){
-    try{await save(snapshot,true);}
-    catch(error){
+    try{
+      await save(snapshot,true);
+      requestAnimationFrame(()=>{
+        if(document.activeElement===document.body)
+          document.querySelector('.pane[data-active] .pane-title:enabled')?.focus({preventScroll:true});
+      });
+    }catch(error){
       if(error.message.includes('存储空间不足'))setFailedLayout(snapshot);
     }
   }

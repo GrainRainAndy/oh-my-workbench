@@ -37,8 +37,10 @@ function openJobs(file,{execute,changed=()=>{}}){
     },
     submit(owner,job,key,input){
       if(typeof key!=='string'||!key.trim()||key.length>128)throw Error('任务提交标识无效');
-      if(!Array.isArray(input)||input.length>256||!input.every(x=>typeof x==='string'&&x.length<=65536))throw Error('任务输入格式无效');
-      const payload=JSON.stringify(input);
+      if(!Array.isArray(input)||input.length>256)throw Error('任务输入格式无效');
+      const submittedInput=Array.from(input);
+      if(!submittedInput.every(x=>typeof x==='string'&&x.length<=65536))throw Error('任务输入格式无效');
+      const payload=JSON.stringify(submittedInput);
       if(Buffer.byteLength(payload)>65536)throw Error('任务输入过大');
       const digest=createHash('sha256').update(payload).digest('hex');
       const existing=db.prepare('SELECT id,digest FROM jobs WHERE owner=? AND jobType=? AND requestKey=?').get(owner,job.type,key);
@@ -63,7 +65,7 @@ function openJobs(file,{execute,changed=()=>{}}){
         lastPercent=percent;
         changed();
       }
-      Promise.resolve().then(()=>execute(owner,job,input,controller?.signal,reportProgress)).then(
+      Promise.resolve().then(()=>execute(owner,job,submittedInput,controller?.signal,reportProgress)).then(
         result=>typeof result==='string'&&Buffer.byteLength(result)<=65536?finish(id,'succeeded',result):finish(id,'unknown'),
         error=>error instanceof ConfirmedCancellation&&controller?.signal.aborted?finish(id,'cancelled'):error instanceof NotDispatched?finish(id,'failed',error.message):finish(id,'unknown')
       ).finally(()=>{finished=true;});
