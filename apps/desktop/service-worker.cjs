@@ -2,12 +2,14 @@ const {pathToFileURL}=require('node:url');
 (async()=>{
   const plugin=await import(pathToFileURL(process.argv[2]).href);
   if(typeof plugin.call!=='function'&&typeof plugin.activate!=='function')throw Error('Invalid backend');
-  await plugin.activate?.({dataDirectory:process.argv[3]});
+  const cleanup=await plugin.activate?.({dataDirectory:process.argv[3]});
+  if(cleanup!==undefined&&typeof cleanup!=='function')throw Error('Invalid backend disposer');
+  const dispose=cleanup??plugin.dispose;
   const active=new Map();
   const reads=new Map();
   process.parentPort.on('message',async({data})=>{
     if(data.type==='dispose'){
-      try{await plugin.dispose?.();process.exit(0);}catch{process.exit(1);}
+      try{await dispose?.();process.exit(0);}catch{process.exit(1);}
     }
     if(data.type==='selected-file'){
       const pending=reads.get(data.id);

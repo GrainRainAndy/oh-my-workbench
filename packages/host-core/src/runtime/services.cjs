@@ -41,7 +41,8 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
     try{child=fork(provider);}catch{recordFailure(provider);throw new NotDispatched('服务进程未能启动');}
     const pending=new Map();
     const dispatched=new Set();
-    let ready,fail,disposeTimeout;
+    let ready,fail,disposeTimeout,exited;
+    const stopped=new Promise(resolve=>{exited=resolve;});
     const started=new Promise((resolve,reject)=>{ready=resolve;fail=reject;});
     function stop(){
       if(generations.get(provider)!==generation)return;
@@ -58,14 +59,18 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
       stop();
     }
     const timer=setTimeout(failed,5000);
-    const generation={started,stop,disposeIdle(){
+    const generation={started,stop,async disable(){
+      if(dispatched.size)stop();
+      else generation.disposeIdle();
+      await stopped;
+    },disposeIdle(){
       if(disposing.has(generation))return;
       disposing.add(generation);
       disposeTimeout=setTimeout(()=>child.kill(),5000);
       child.postMessage({type:'dispose'});
     },async invoke(message,signal,onProgress,fileDelegate){
       await started;
-      if(generations.get(provider)!==generation)throw new NotDispatched('服务已停止');
+      if(generations.get(provider)!==generation||disposing.has(generation))throw new NotDispatched('服务已停止');
       if(dispatched.size>=64)throw new NotDispatched('服务繁忙');
       const id=randomUUID();
       if(signal?.aborted)throw new ConfirmedCancellation('任务派发前已取消');
@@ -107,6 +112,9 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
       if(request)message.error?request.reject(Error(request.fileDenied?'FILE_ACCESS_DENIED':message.error==='DATA_VERSION_UNSUPPORTED'?'DATA_VERSION_UNSUPPORTED':'服务调用失败')):request.resolve(message.result);
     });
     child.once('exit',()=>{
+      exited();
+      clearTimeout(timer);
+      fail(new NotDispatched('服务已停止'));
       clearTimeout(disposeTimeout);
       for(const id of dispatched)outstanding.delete(id);
       dispatched.clear();
@@ -146,6 +154,6 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
     if(!matches(spec.methods[method].output,result))throw Error('服务结果无效');
     if(spec.methods[method].invalidates===true&&generations.get(provider.id)===generation)notify({service,version,provider:provider.id});
     return result;
-  },setWindowless(value){windowless=value;scheduleIdle();},busy:()=>inFlight>0||outstanding.size>0||disposing.size>0,stop:id=>generations.get(id)?.stop(),close(){windowless=false;clearTimeout(idleTimer);for(const g of generations.values())g.stop();}};
+  },setWindowless(value){windowless=value;scheduleIdle();},busy:()=>inFlight>0||outstanding.size>0||disposing.size>0,stop:id=>generations.get(id)?.stop(),disable:id=>generations.get(id)?.disable(),close(){windowless=false;clearTimeout(idleTimer);for(const g of generations.values())g.stop();}};
 }
 module.exports={createServices};

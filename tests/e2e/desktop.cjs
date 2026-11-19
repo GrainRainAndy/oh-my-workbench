@@ -313,7 +313,14 @@ app.once('browser-window-created',(_event,win)=>{
       await run("document.querySelectorAll('.swatches')[0].querySelectorAll('button')[2].click()");
       await until("(async()=>{const [w]=await window.workspaces.list();return w.views[w.layout.first.viewInstanceId].state.selectedIndex===2 && Object.keys(w.views[w.layout.second.viewInstanceId].state).length===0})()");
       await until("document.querySelector('.pane[data-active] .selected-color')");
+      const beforeSelecting=await run("(async()=>(await window.workspaces.list())[0])()");
+      noSpace=true;
       await run("document.querySelectorAll('.pane-title')[1].click()");
+      await until("document.querySelector('.workspace-error button')?.textContent==='重试保存布局'");
+      assert.deepEqual(await run("(async()=>(await window.workspaces.list())[0])()"),beforeSelecting);
+      assert.equal(await run("document.querySelectorAll('.pane-title')[0].getAttribute('aria-pressed')"),'true');
+      noSpace=false;
+      await run("document.querySelector('.workspace-error button').click()");
       await until("(async()=>{const [w]=await window.workspaces.list();return w.activePaneId===w.layout.second.paneId})()");
       const manualEntered=Promise.withResolvers(),manualRelease=Promise.withResolvers();
       holdSave={entered:manualEntered.resolve,release:manualRelease.promise};

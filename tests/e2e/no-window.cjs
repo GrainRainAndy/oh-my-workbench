@@ -4,6 +4,7 @@ const {createServer}=require('node:http');
 const {join}=require('node:path');
 const {mkdirSync,copyFileSync,writeFileSync,readFileSync}=require('node:fs');
 const {app,BrowserWindow,dialog,ipcMain,powerMonitor}=require('electron');
+const nativeSleep=process.argv.includes('--native-sleep');
 const register=ipcMain.handle.bind(ipcMain);
 let cancelCalls=0,staleProgress=false;
 ipcMain.handle=(channel,listener)=>register(channel,channel==='jobs:cancel'?async(...args)=>{
@@ -52,6 +53,7 @@ async function verify(){
         await fetch(${JSON.stringify(endpoint)}+'/confirm');
         context.confirmCancelled();
       }
+      if(input[0]==='#123456')context.reportProgress(25);
       if(input[0]==='#fedcba')context.reportProgress(65);
       return (await fetch(${JSON.stringify(endpoint)})).text();
     }`);
@@ -76,14 +78,34 @@ async function verify(){
   assert.equal(job.status,'running');
   const closed=once(win,'closed');win.close();await closed;
   assert.equal(BrowserWindow.getAllWindows().length,0);
-  response.end('completed-without-window');
   const {DatabaseSync}=require('node:sqlite');
   const db=new DatabaseSync(join(profile,'jobs.sqlite'),{readOnly:true});
   const read=db.prepare('SELECT status FROM jobs WHERE id=?');
+  const readProgress=db.prepare('SELECT percent FROM job_progress WHERE jobId=?');
+  for(let i=0;i<100&&!readProgress.get(job.id);i++)await new Promise(resolve=>setTimeout(resolve,25));
+  assert.equal(readProgress.get(job.id)?.percent,25);
+  let windowsOpened=0;
+  const onWindow=()=>{windowsOpened++;};
+  app.on('browser-window-created',onWindow);
+  if(!nativeSleep)powerMonitor.emit('resume');
+  assert.equal(read.get(job.id).status,'running');
+  assert.equal(readProgress.get(job.id).percent,25);
+  response.end('completed-without-window');
   const deadline=Date.now()+4000;
   while(read.get(job.id).status==='running'&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,30));
   assert.equal(read.get(job.id).status,'succeeded');
   assert.equal(BrowserWindow.getAllWindows().length,0);
+  if(nativeSleep){
+    console.log('任务已在无窗状态完成。现在可以手动让 Mac 睡眠，再将其唤醒。');
+    await once(powerMonitor,'suspend');
+    const suspendedAt=new Date().toISOString();
+    await once(powerMonitor,'resume');
+    console.log(JSON.stringify({suspendedAt,resumedAt:new Date().toISOString()}));
+    assert.equal(read.get(job.id).status,'succeeded');
+    assert.equal(readProgress.get(job.id).percent,25);
+  }
+  assert.equal(windowsOpened,0);
+  app.removeListener('browser-window-created',onWindow);
   db.close();
   const reopened=nextWindow();
   app.emit('activate');
@@ -95,8 +117,14 @@ async function verify(){
   assert.equal(await second.webContents.executeJavaScript("document.querySelector('.pane-title')?.textContent"),'运行时配色视图');
   const records=await second.webContents.executeJavaScript('window.jobs.list()');
   assert.equal(records.length,1);
+  assert.equal(records[0].progress,25);
   assert.equal(records[0].result,'completed-without-window');
   assert.equal(accepted,1);
+  if(nativeSleep){
+    server.close();
+    console.log('真实睡眠唤醒：窗口未自开，任务结果与进度已恢复，后台只接单一次。');
+    return;
+  }
   await second.webContents.executeJavaScript("document.querySelector('.jobs-link').click()");
   const finishedCard=".job-group[aria-label=已结束] .job-card";
   for(let i=0;i<100&&!await second.webContents.executeJavaScript(`Boolean(document.querySelector('${finishedCard}'))`);i++)await new Promise(resolve=>setTimeout(resolve,30));
@@ -247,5 +275,5 @@ async function verify(){
   server.close();
   console.log('One request accepted; last window closed; job committed while window count was zero; reopened window recovered result.');
 }
-const timer=setTimeout(()=>app.exit(1),25000);
+const timer=setTimeout(()=>{console.error('等待桌面验收超时');app.exit(1);},nativeSleep?900000:25000);
 verify().then(()=>{clearTimeout(timer);app.quit();},error=>{console.error(error);app.exit(1);});

@@ -110,11 +110,13 @@ function App(){
     if(!plugin.available||!Component)return [];
     return plugin.views.map(view=>({...view,description:view.description??plugin.description,pluginId:plugin.id,Component}));
   }),[safeMode,plugins]);
+  const [pluginChange,setPluginChange]=useState(null);
   async function toggle(id,enabled){
+    setPluginChange({id,enabled});
     setBusy(true);
     try{setPlugins(await window.plugins.setEnabled(id,enabled));setError('');}
     catch(e){setError(e.message);}
-    finally{setBusy(false);}
+    finally{setPluginChange(null);setBusy(false);}
   }
   function navigateWorkspaceList(event){
     const buttons=Array.from(event.currentTarget.querySelectorAll('button:enabled'));
@@ -340,7 +342,7 @@ function App(){
     const Component=incompatible?null:plugin?.Component;
     const installed=v&&plugins.find(p=>p.id===v.pluginId);
     return <section key={node.paneId} className="pane" data-active={w.activePaneId===node.paneId||undefined} data-maximized={zoom===node.paneId||undefined}><div className="panehead"><span className="dot"/><button className="pane-title" title="选为当前窗格" aria-pressed={w.activePaneId===node.paneId} disabled={busy} onClick={()=>{
-      if(w.activePaneId!==node.paneId)save({...w,activePaneId:node.paneId});
+      if(w.activePaneId!==node.paneId)saveLayout({...w,activePaneId:node.paneId});
     }}>{plugin?.title??installed?.views.find(view=>view.type===v.viewType)?.title??(v?v.viewType:'空窗格')}</button><div className="actions"><button disabled={busy} aria-label="窗格操作" title="窗格操作" aria-haspopup="dialog" onClick={()=>setOptions(node)}>···</button>{[['horizontal','左右切分'],['vertical','上下切分']].map(([axis,label])=><button className="split-action" key={axis} disabled={busy} title={label} aria-label={label} onClick={()=>modify(node.paneId,{kind:'split',axis,leaf:{type:'leaf',paneId:uuid()}})}><i className={'split-symbol '+axis} aria-hidden="true"/><span aria-hidden="true">{label}</span></button>)}{w.layout.type==='split'&&<button className="zoom-pane" aria-label={zoom===node.paneId?'还原窗格':'放大窗格'} title={zoom===node.paneId?'还原窗格 (Esc)':'放大窗格'} aria-pressed={zoom===node.paneId} onClick={()=>setZoom(zoom===node.paneId?null:node.paneId)}><i aria-hidden="true"/></button>}<button disabled={busy} title="关闭窗格" aria-label="关闭窗格" onClick={()=>modify(node.paneId,{kind:'close'})}>×</button></div></div>
     {Component?<ViewBoundary key={v.id} title={plugin.title} manage={()=>beforeLeaving(()=>setManager(true))}><React.Suspense fallback={<p>正在加载视图…</p>}><Component viewType={v.viewType} registerController={controller=>registerController(v.id,controller)} jobs={{submit:(type,key,input)=>window.jobs.submit({workspaceId:w.id,viewId:v.id,type,key,input})}} services={{watch:(service,version,callback)=>{
       const dependency=installed?.usesServices?.find(s=>s.id===service&&s.version===version);
@@ -368,7 +370,7 @@ function App(){
     setActive(notice.workspaceId);setManager(false);setNotice('');
   })}>打开工作区</button>}<button aria-label="关闭提示" onClick={()=>setNotice('')}>×</button></p>}{importError&&<div role="alert" className="workspace-error import-error"><span>{importError}</span><button disabled={busy} onClick={()=>transfer('import')}>重新选择布局文件</button><button aria-label="关闭导入提示" onClick={()=>setImportError('')}>×</button></div>}{error&&<div role="alert" className="workspace-error"><span>{error.replace(/^Error invoking remote method '[^']+': Error: /,'')}</span>
       {!manager&&error.includes('存储空间不足')&&failedLayout&&failedLayout.id===w?.id&&failedLayout.revision===w.revision&&<button disabled={busy} onClick={()=>beforeLeaving(()=>saveLayout(failedLayout),'layout-change')}>重试保存布局</button>}
-      {error.includes('工作区已更新')&&<button disabled={busy} onClick={()=>beforeLeaving(reloadWorkspaces)}>载入最新工作区</button>}</div>}{manager==='jobs'&&<JobCenter plugins={plugins} returnButton={returnButton}/>}{manager===true&&<PluginManager returnButton={returnButton} plugins={plugins} safeMode={safeMode} busy={busy} toggle={toggle}/>}
+      {error.includes('工作区已更新')&&<button disabled={busy} onClick={()=>beforeLeaving(reloadWorkspaces)}>载入最新工作区</button>}</div>}{manager==='jobs'&&<JobCenter plugins={plugins} returnButton={returnButton}/>}{manager===true&&<PluginManager pluginChange={pluginChange} returnButton={returnButton} plugins={plugins} safeMode={safeMode} busy={busy} toggle={toggle}/>}
 {!manager&&!w&&!busy&&!error&&items.length>0&&<section className="welcome imported-workspace"><h1>选择工作区</h1>{items.map(item=><button key={item.id} className="view-choice" onClick={()=>{setActive(item.id);setNotice('');}}>{item.name}</button>)}</section>}
 {!manager&&!w&&!busy&&!error&&items.length===0&&<section className="welcome"><div className="layout-icon" aria-hidden="true"><i/><i/><i/></div><h1>建立你的工作区</h1><p>把常用视图放在一起。布局和配置会保存在这台 Mac 上。</p><div className="welcome-actions"><button className="plugin" onClick={()=>setDialog('create')}>＋ 新建工作区</button><button onClick={()=>transfer('import')}>导入布局</button></div></section>}{!manager&&w&&<><div className="heading"><div><h1 title={w.name}>{w.name}</h1></div><div className="workspace-tools"><span className="status">{error?'保存状态待检查':busy?'正在保存…':'已保存到本机'}</span><details><summary aria-label="工作区操作">•••</summary><div className="workspace-menu"><button ref={saveButton} aria-keyshortcuts="Meta+S" disabled={busy} onClick={event=>{
       event.currentTarget.closest('details').open=false;

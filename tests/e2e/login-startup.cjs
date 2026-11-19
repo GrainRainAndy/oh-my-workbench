@@ -19,10 +19,10 @@ async function verify(){
   const windows=[];
   app.on('browser-window-created',(_event,window)=>windows.push(window));
   const root=join(app.getPath('userData'),'fixtures'),directory=join(root,'resident');
-  const marker=join(directory,'activated');
+  const marker=join(directory,'activated'),disposed=join(directory,'disposed');
   await mkdir(directory,{recursive:true});
   await writeFile(join(directory,'manifest.json'),JSON.stringify({id:'fixture.resident',name:'启动验证',views:[],description:'验证静默启动',backgroundMode:'resident',activationEvents:['onAppStart']}));
-  await writeFile(join(directory,'backend.mjs'),`import {writeFile} from 'node:fs/promises';export async function activate(){await writeFile(${JSON.stringify(marker)},String(process.pid));}`);
+  await writeFile(join(directory,'backend.mjs'),`import {writeFile} from 'node:fs/promises';export async function activate(){await writeFile(${JSON.stringify(marker)},String(process.pid));return async()=>{await new Promise(resolve=>setTimeout(resolve,500));await writeFile(${JSON.stringify(disposed)},String(process.pid));};}`);
   require('../../apps/desktop/main.cjs').startDesktop(root);
   await startupChecked;
   let pid;
@@ -59,11 +59,15 @@ async function verify(){
     await writeFile(process.env.WORKBENCH_MANAGER_SCREENSHOT,screenshot.toPNG());
   }
   await run(toggle+'.click()');
+  await until(()=>run("document.querySelector('.plugin-info [role=status]')?.textContent==='正在停用「启动验证」…'"));
+  assert.equal(await run(toggle+".disabled"),true);
   await until(()=>run(toggle+".getAttribute('aria-checked')==='false'"));
+  assert.equal(await run("!!document.querySelector('.plugin-info [role=status]')"),false);
   await until(()=>{
     try{process.kill(Number(pid),0);return false;}
     catch(error){if(error.code==='ESRCH')return true;throw error;}
   });
+  assert.equal(await readFile(disposed,'utf8'),pid);
   const backend=join(directory,'backend.mjs');
   const working=await readFile(backend);
   await writeFile(backend,"export function activate(){throw Error('private-test-detail')}");
@@ -78,6 +82,29 @@ async function verify(){
     const current=await readFile(marker,'utf8');
     return Number(current)>0&&current!==pid;
   });
+  await run("window.plugins.setEnabled('fixture.resident',false)");
+  const previousPid=await readFile(marker,'utf8');
+  const cleaning=join(directory,'cleanup-started');
+  await writeFile(backend,`import {writeFile} from 'node:fs/promises';
+    export async function activate(){
+      await writeFile(${JSON.stringify(marker)},String(process.pid));
+      return async()=>{
+        await writeFile(${JSON.stringify(cleaning)},String(process.pid));
+        await new Promise(()=>{});
+      };
+    }`);
+  await run("window.plugins.setEnabled('fixture.resident',true)");
+  await until(async()=>{const value=await readFile(marker,'utf8');return Number(value)>0&&value!==previousPid;});
+  const stuckPid=await readFile(marker,'utf8');
+  await writeFile(backend,working);
+  const began=performance.now();
+  const states=await run(`Promise.all([false,true].map(enabled=>
+    window.plugins.setEnabled('fixture.resident',enabled).then(list=>list.find(p=>p.id==='fixture.resident').enabled)))`);
+  assert.deepEqual(states,[false,true]);
+  assert.ok(performance.now()-began>=4950);
+  assert.equal(await readFile(cleaning,'utf8'),stuckPid);
+  assert.throws(()=>process.kill(Number(stuckPid),0),{code:'ESRCH'});
+  await until(async()=>{const value=await readFile(marker,'utf8');return Number(value)>0&&value!==stuckPid;});
   assert.deepEqual(await run('window.workspaces.list()'),[]);
 }
 verify().then(()=>app.exit(0),error=>{console.error(error);app.exit(1);});

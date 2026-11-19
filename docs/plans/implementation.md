@@ -91,8 +91,10 @@ Files：packages/host-core/src/persistence/{backup,migrate,recovery}.ts、runtim
 ### T07 M0 验收
 
 - [x] 新增第三个独立fixture不修改宿主业务代码；依赖检查阻止插件import宿主私有实现。
-- [ ] pnpm exec vitest run、pnpm exec tsc --noEmit、pnpm exec playwright test及边界检查通过；执行R01–R15/R19适用项与R18基础桌面检查。
-- [ ] 完成性能与长运行证据、开发预览安装包、SDK使用例与已知限制；不把三个fixture称产品MVP。
+- [x] 自动化回归：当前 npm test 通过 48 项测试、TypeScript 类型检查与插件依赖边界检查；npm run test:desktop 通过 18 个 Electron 场景。实际入口及工具见本页「当前实施状态」。
+- [x] 开发预览包、SDK 使用例、性能原始数据与已知限制已留档。候选包 macos-arm64-e3K1Da 对应本地检查点 3bb6841；完整两小时开关窗记录见[验收矩阵](../qa/traceability.md)，来自此前构建。
+- [ ] 完成 R01–R15/R19 适用项及 R18 原生验收。当前开放项含原生选择器和授权、实际登录启动、实体快捷键唤窗、物理睡眠唤醒、辅助技术操作、升级确认框及访达定位。逐项证据和限制见[运行记录](../qa/evidence/runtime-progress.md)。
+- [ ] 汇总上述结果并作 T07 结论，之后按依赖顺序进入产品阶段。
 
 ## M1 产品 MVP
 

@@ -180,12 +180,23 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
       expose('plugins:safeMode',()=>safeMode);
       expose('plugins:reloadWindow',()=>win.reload());
       expose('plugins:list',()=>plugins.list());
-      expose('plugins:setEnabled',input=>{
+      async function changePluginEnabled(input){
         const previouslyAvailable=new Set(plugins.list().filter(plugin=>plugin.available).map(plugin=>plugin.id));
         const updated=plugins.setEnabled(input);
-        for(const plugin of updated)if(!plugin.available){clearStartupIssue(plugin.id);services.stop(plugin.id); }
+        const stops=[];
+        for(const plugin of updated)if(!plugin.available){
+          clearStartupIssue(plugin.id);
+          stops.push(services.disable(plugin.id));
+        }
+        await Promise.all(stops);
         activateStartupPlugins(previouslyAvailable);
         return updated;
+      }
+      let pluginChanges=Promise.resolve();
+      expose('plugins:setEnabled',input=>{
+        const change=pluginChanges.then(()=>changePluginEnabled(input));
+        pluginChanges=change.catch(()=>{});
+        return change;
       });
       function ownerOf(request){
         const workspace=repository.list().find(w=>w.id===request.workspaceId);

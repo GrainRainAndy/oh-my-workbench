@@ -1,6 +1,6 @@
 import React,{useState,useEffect,useRef} from 'react';
 import DesktopSettings from './DesktopSettings.jsx';
-export default function PluginManager({returnButton,plugins,safeMode,busy,toggle}){
+export default function PluginManager({returnButton,plugins,safeMode,busy,toggle,pluginChange}){
   const [operation,setOperation]=useState(null);
   const copying=operation!==null;
   const [last,setLast]=useState(null);
@@ -57,8 +57,9 @@ export default function PluginManager({returnButton,plugins,safeMode,busy,toggle
     <div className="manager-list">{plugins.map(plugin=><article key={plugin.id}>
       <div className="plugin-symbol" aria-hidden="true">▦</div><div className="plugin-info"><h2>{plugin.name}</h2><p id={'purpose-'+plugin.id}>{plugin.description}</p>
         {plugin.backgroundMode==='resident'&&<p className="background-policy" id={'background-'+plugin.id}><strong>常驻后台</strong>启用后随工作台启动，关闭窗口后仍可运行。</p>}
+        {pluginChange?.id===plugin.id&&<p id={'change-'+plugin.id} role="status">{pluginChange.enabled?'正在启用':'正在停用'}「{plugin.name}」…</p>}
         {plugin.dependencyIssue&&<p className="dependency-issue" id={'dependency-'+plugin.id}><strong>已启用，暂不可用</strong><br/>{plugin.dependencyIssue}</p>}</div>
-      <button className="toggle" role="switch" aria-label={plugin.name} aria-describedby={[plugin.description&&'purpose-'+plugin.id,plugin.backgroundMode==='resident'&&'background-'+plugin.id,safeMode&&'safe-mode-explanation',plugin.dependencyIssue&&'dependency-'+plugin.id].filter(Boolean).join(' ')||undefined} aria-checked={plugin.enabled} disabled={busy} onClick={()=>toggle(plugin.id,!plugin.enabled)}><i/></button>
+      <button className="toggle" role="switch" aria-label={plugin.name} aria-describedby={[pluginChange?.id===plugin.id&&'change-'+plugin.id,plugin.description&&'purpose-'+plugin.id,plugin.backgroundMode==='resident'&&'background-'+plugin.id,safeMode&&'safe-mode-explanation',plugin.dependencyIssue&&'dependency-'+plugin.id].filter(Boolean).join(' ')||undefined} aria-checked={plugin.enabled} disabled={busy} onClick={()=>toggle(plugin.id,!plugin.enabled)}><i/></button>
       {plugin.databaseVersion&&plugin.available&&!safeMode&&<div className="plugin-upgrade"><button disabled={busy||copying} onClick={async()=>{
         setOperation('upgrade');setUpgradeNotice(null);
         try{

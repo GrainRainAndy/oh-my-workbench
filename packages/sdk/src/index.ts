@@ -56,4 +56,6 @@ export interface ViewController {
 }
 
 /** Called once per backend process before the host accepts service calls. */
-export type BackendActivate = (context: Pick<BackendContext, 'dataDirectory'>) => void | Promise<void>;
+export type BackendDisposer = () => void | Promise<void>;
+export type BackendActivate = (context: Pick<BackendContext, 'dataDirectory'>) =>
+  void | BackendDisposer | Promise<void | BackendDisposer>;
