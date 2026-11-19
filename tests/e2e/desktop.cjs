@@ -256,11 +256,22 @@ app.once('browser-window-created',(_event,win)=>{
       await until("document.querySelector('.plugin:enabled')");
       assert.deepEqual(await run("Array.from(document.querySelectorAll('.view-choice strong'),el=>el.textContent)"),['配色板','计数器','计数概览']);
       assert.match(await run("document.querySelector('.view-choice small').textContent"),/浏览配色方案/);
+      const pendingModule=Promise.withResolvers();
       const requests=win.webContents.session.webRequest;
       requests.onBeforeRequest({urls:['file://*/*']},(details,done)=>{
-        done({cancel:/\/assets\/view-[^/]+\.js$/.test(details.url)});
+        if(/\/assets\/view-[^/]+\.js$/.test(details.url))pendingModule.resolve(done);
+        else done({});
       });
       await run("document.querySelector('.plugin').click()");
+      await until("document.querySelector('.pane-loading[role=status]')");
+      assert.ok(await run(`(()=>{
+        const hint=document.querySelector('.pane-loading');
+        const range=document.createRange();range.selectNodeContents(hint);
+        const text=range.getBoundingClientRect(),box=hint.getBoundingClientRect();
+        return Math.abs(text.left+text.width/2-box.left-box.width/2)<2 &&
+          Math.abs(text.top+text.height/2-box.top-box.height/2)<3;
+      })()`));
+      (await pendingModule.promise)({cancel:true});
       await until("document.querySelector('.view-recovery-actions button')");
       requests.onBeforeRequest(null);
       await run("document.querySelector('.view-recovery-actions button').click()");

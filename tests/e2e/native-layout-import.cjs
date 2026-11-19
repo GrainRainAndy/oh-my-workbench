@@ -4,7 +4,7 @@ const {mkdtemp,writeFile,rm}=require('node:fs/promises');
 const {tmpdir}=require('node:os');
 const {join}=require('node:path');
 const {setTimeout:delay}=require('node:timers/promises');
-const {app}=require('electron');
+const {app,dialog}=require('electron');
 
 async function verify(){
   const directory=await mkdtemp(join(tmpdir(),'workbench-native-import-'));
@@ -14,6 +14,8 @@ async function verify(){
     const workspace={id:'sample',name:'原生选择器验证',schemaVersion:1,revision:0,
       activePaneId:'main',layout:{type:'leaf',paneId:'main'},views:{}};
     await writeFile(file,JSON.stringify({format:'workbench.layout',version:1,workspace}));
+    const openPanel=dialog.showOpenDialog.bind(dialog);
+    dialog.showOpenDialog=(parent,options)=>openPanel(parent,{...options,defaultPath:directory});
     const created=once(app,'browser-window-created');
     require('../../apps/desktop/main.cjs').startDesktop();
     const [,win]=await created;

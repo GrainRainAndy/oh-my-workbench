@@ -25,7 +25,7 @@ function expose(channel, handler){
 function show(){
   services?.setWindowless(false);
   if(win){if(win.isMinimized())win.restore();win.show();win.focus();return;}
-  win=new BrowserWindow({width:1200,height:790,minWidth:660,minHeight:460,titleBarStyle:'hiddenInset',backgroundColor:'#f7f7f2',webPreferences:{preload:join(__dirname,'preload.cjs'),sandbox:true,contextIsolation:true,nodeIntegration:false}});
+  win=new BrowserWindow({width:1200,height:790,minWidth:660,minHeight:460,titleBarStyle:'hiddenInset',backgroundColor:'#e6e9ef',webPreferences:{preload:join(__dirname,'preload.cjs'),sandbox:true,contextIsolation:true,nodeIntegration:false}});
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   win.webContents.on('will-navigate',e=>e.preventDefault());
   const current=win;

@@ -31,6 +31,11 @@ export async function verifyDenseWorkspace({evaluate,send,sessionId}){
       compact:h.querySelector('[aria-label=关闭窗格]').getBoundingClientRect().width===0};
   })`);
   assert.ok(geometry.every(h=>h.visible&&h.overflow===0&&h.compact),JSON.stringify(geometry));
+  const dimensions=await evaluate(`({
+    viewportWidth:innerWidth,viewportHeight:innerHeight,
+    headingHeight:document.querySelector('main > .heading').getBoundingClientRect().height,
+    canvasHeight:document.querySelector('.canvas').getBoundingClientRect().height
+  })`);
   if(process.env.WORKBENCH_CAPTURE){
     const {data}=await send('Page.captureScreenshot',{format:'png'},sessionId);
     await writeFile(process.env.WORKBENCH_CAPTURE,Buffer.from(data,'base64'));
@@ -41,5 +46,5 @@ export async function verifyDenseWorkspace({evaluate,send,sessionId}){
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space',windowsVirtualKeyCode:32},sessionId);
   for(let i=0;i<50&&!await evaluate("Boolean(document.querySelector('dialog[open]'))");i++)await delay(20);
   assert.equal(await evaluate("document.querySelectorAll('dialog[open] .layout-tools button').length"),4);
-  console.log(JSON.stringify({panes:geometry.length,headerWidth:geometry[0].width,maximumOverflow:Math.max(...geometry.map(h=>h.overflow)),restoreMs:elapsed}));
+  console.log(JSON.stringify({...dimensions,panes:geometry.length,headerWidth:geometry[0].width,maximumOverflow:Math.max(...geometry.map(h=>h.overflow)),restoreMs:elapsed}));
 }

@@ -3,7 +3,7 @@ import React,{useState} from 'react';
 const themes={system:'跟随系统',light:'浅色',dark:'深色'};
 const preference='workbench.appearance';
 const saved=localStorage.getItem(preference);
-document.documentElement.dataset.appearance=Object.hasOwn(themes,saved)?saved:'system';
+document.documentElement.dataset.appearance=Object.hasOwn(themes,saved)?saved:'light';
 
 export default function Appearance(){
   const [theme,setTheme]=useState(document.documentElement.dataset.appearance);

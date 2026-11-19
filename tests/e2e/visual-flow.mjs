@@ -31,7 +31,11 @@ export async function captureFlow({evaluate,send,sessionId,output}){
     await send('Emulation.setDeviceMetricsOverride',{width:660,height:460,deviceScaleFactor:1,mobile:false},sessionId);
     await wait("innerWidth===660 && innerHeight<=460");
   }
-  if(process.argv.includes('--light')){
+  assert.equal(await evaluate("document.documentElement.dataset.appearance"),'light');
+  if(process.argv.includes('--dark')){
+    await evaluate("const theme=document.querySelector('.appearance select');theme.value='dark';theme.dispatchEvent(new Event('change',{bubbles:true}))");
+    await wait("document.documentElement.dataset.appearance==='dark'");
+  }else if(process.argv.includes('--light')){
     await evaluate("const theme=document.querySelector('.appearance select');theme.value='light';theme.dispatchEvent(new Event('change',{bubbles:true}))");
     await wait("document.documentElement.dataset.appearance==='light'");
   }
