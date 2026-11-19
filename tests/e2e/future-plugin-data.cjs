@@ -98,11 +98,29 @@ async function verify(){
       for(let i=0;i<100&&!await run("document.querySelector('.backup-history summary')?.textContent.includes('3')");i++)await delay(30);
       assert.equal(await run("document.querySelector('.backup-history summary').textContent"),'备份记录（3）');
       let revealed;
-      require('electron').shell.showItemInFolder=path=>{revealed=path;};
+      const nativeFinder=process.argv.includes('--native-finder');
+      if(!nativeFinder)require('electron').shell.showItemInFolder=path=>{revealed=path;};
       await run("Array.from(document.querySelectorAll('.manager-list button')).find(b=>b.textContent.includes('显示升级前备份')).click()");
-      for(let i=0;i<100&&!revealed;i++)await delay(30);
       const latest=await run('(async()=>(await window.backups.list())[0].id)()');
-      assert.equal(revealed,join(profile,'backups',latest));
+      const expected=join(profile,'backups',latest);
+      if(nativeFinder){
+        const {execFile}=require('node:child_process');
+        const execute=require('node:util').promisify(execFile);
+        const actualPath=require('node:fs').realpathSync;
+        for(let i=0;i<80;i++){
+          const {stdout}=await execute('osascript',['-e',
+            'tell application "Finder" to return POSIX path of ((item 1 of (get selection)) as alias)']);
+          revealed=stdout.trim();
+          if(revealed && actualPath(revealed)===actualPath(expected))break;
+          await delay(100);
+        }
+        assert.ok(revealed,'Finder did not report a selected folder');
+        assert.equal(actualPath(revealed),actualPath(expected));
+        console.log('Finder selected the verified pre-upgrade backup:',latest);
+      }else{
+        for(let i=0;i<100&&!revealed;i++)await delay(30);
+        assert.equal(revealed,expected);
+      }
       active.prepare('UPDATE tally SET count=? WHERE id=1').run(Number.MAX_SAFE_INTEGER);
     }finally{active.close();}
     const reload=once(win.webContents,'did-finish-load');

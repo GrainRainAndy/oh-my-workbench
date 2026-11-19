@@ -85,7 +85,7 @@ function Split({node,commit,children}){
   const [first,second]=React.Children.toArray(children);
   return <div className="split" ref={group} style={{[horizontal?'gridTemplateColumns':'gridTemplateRows']:`minmax(0,${ratio}fr) 10px minmax(0,${1-ratio}fr)`}}>
     {first}<div role="separator" tabIndex={0} aria-label={horizontal?'调整左右窗格比例':'调整上下窗格比例'} aria-orientation={horizontal?'vertical':'horizontal'} aria-valuenow={Math.round(ratio*100)} aria-valuemin={8} aria-valuemax={92}
-      title={'拖动调整比例，双击均分。'+keyboardHint} aria-description={keyboardHint} aria-valuetext={ratioText} data-ratio={ratioText} className={'divider '+(horizontal?'vertical':'horizontal')}
+      title={'拖动调整比例，双击均分。'+keyboardHint} aria-description={keyboardHint} aria-valuetext={ratioText} data-ratio={ratioText} data-dragging={preview!==null||undefined} className={'divider '+(horizontal?'vertical':'horizontal')}
       onPointerDown={beginDrag}
       onDoubleClick={()=>{if(node.ratio!==.5)commit(.5);}} onKeyDown={keyboardResize}/>{second}</div>;
 }

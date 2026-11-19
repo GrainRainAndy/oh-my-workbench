@@ -35,6 +35,19 @@ async function verify(){
       && menu.getBoundingClientRect().right<=innerWidth && heading.scrollWidth>heading.clientWidth
       && document.documentElement.scrollWidth===innerWidth && !!document.querySelector('.swatches');
   })()`));
+  assert.ok(await run(`(()=>{
+    const pane=document.querySelector('.pane'),header=pane.querySelector('.panehead');
+    const content=document.createElement('div');
+    content.style.minHeight='150vh';
+    pane.append(content);
+    try {
+      const top=header.getBoundingClientRect().top;
+      pane.scrollTop=120;
+      const menu=header.querySelector('[aria-haspopup]').getBoundingClientRect();
+      return pane.scrollTop>0 && header.getBoundingClientRect().top===top
+        && header.contains(document.elementFromPoint(menu.x+menu.width/2,menu.y+menu.height/2));
+    } finally { content.remove(); pane.scrollTop=0; }
+  })()`),'Long plugin content must leave the pane menu visible and clickable');
   await run("document.querySelector('nav button:last-child').focus()");
   assert.ok(await run("document.querySelector('nav').scrollTop>0 && document.querySelector('footer').getBoundingClientRect().bottom<=innerHeight"));
   assert.ok(await run(`(()=>{

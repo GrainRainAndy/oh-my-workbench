@@ -53,7 +53,21 @@ try{
     if(!ready)await delay(50);
   }
   assert.ok(ready,await evaluate("document.body?.innerText?.slice(0,400)"));
-  if(process.argv.includes('--visual-flow')){
+  if(process.argv.includes('--finder-reveal')){
+    const {createInterface}=await import('node:readline/promises');
+    await evaluate("document.querySelector('.manage-link').click()");
+    await evaluate("document.querySelector('.backup-card>button').click()");
+    for(let i=0;i<100&&!await evaluate("!!document.querySelector('.backup-receipt button')");i++)await delay(50);
+    const [backup]=await evaluate('window.backups.list()');
+    assert.ok(backup?.id);
+    await evaluate("document.querySelector('.backup-receipt button').click()");
+    console.log('Expected selected Finder folder:',join(profile,'backups',backup.id));
+    const prompt=createInterface({input:process.stdin,output:process.stdout});
+    try{
+      const selected=await prompt.question('Enter the folder name actually selected in Finder: ');
+      assert.equal(selected.trim(),backup.id);
+    }finally{prompt.close();}
+  }else if(process.argv.includes('--visual-flow')){
     const {captureFlow}=await import('./visual-flow.mjs');
     await captureFlow({evaluate,send,sessionId,output:process.argv[process.argv.indexOf('--visual-flow')+1]});
   }else if(process.argv.includes('--windowless-job')){

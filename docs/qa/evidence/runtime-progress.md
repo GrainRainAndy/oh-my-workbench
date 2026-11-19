@@ -744,3 +744,33 @@ tests/e2e/system-credentials.cjs 使用真实 Electron safeStorage 与临时 SQL
 ### 插件清理与管理页反馈候选包 4jRcXu
 
 生成 release/macos-arm64-4jRcXu/Oh My Workbench.app，本轮 npm test 48 项通过，包签名通过 deep/strict 校验，独立配置包内验证工作区恢复、插件视图及后台服务成功。该源码最近一次完整 Electron 回归 18 个场景通过。真实登录及物理睡眠仍待验收。
+
+### 4jRcXu 启动与工作区切换复测
+
+Apple M5、32 GiB、macOS 27.0.1 arm64，沿用 packaged.mjs 正式包采样脚本。30 次独立空配置启动，最近秩 p50/p95/max 为 253.24/257.33/262.52 ms；100 次暖工作区切换为 33.3/35.2/36.3 ms。此前同机样本 p95 分别为 286.11 和 33.8 ms。未清系统缓存，未隔离日常负载，跨批次差异不能归因于某一改动。保留[时延](packaged-me9svQ/latency.csv)、[进程树](packaged-me9svQ/processes.csv)及[环境和包标识](packaged-me9svQ/environment.json)。
+
+### 长内容窗格的操作入口
+
+在 660 × 460 的 Electron 窗口内为真实窗格追加长内容，滚动后检查标题栏位置及菜单中心的点击命中。原样式断言失败；改为让标题栏在窗格滚动区域顶部吸附后，重新构建并执行 compact-window.cjs，退出码 0。测试内容用于制造溢出；本次验证针对宿主管理的窗格滚动。
+
+### 窗格标题栏修复后的预览包 1DGsWF
+
+npm test 通过 48 项，npm run test:desktop 通过全部 18 个 Electron 场景。desktop.cjs 验证同插件左右视图保存不同配色、只修改左侧选择状态，以及停用、重启、重新启用后的快照和配置。missing-plugin.cjs 分三次启动，移走插件后检查占位和另一插件视图，重新放回后核对选中色值；各阶段保存的工作区与原快照深度相等。
+
+npm run package:mac 生成 release/macos-arm64-1DGsWF/Oh My Workbench.app，通过 deep/strict 本机签名校验。packaged.mjs --dense 在此包内恢复八个视图，首个标题栏宽 220 px，所有标题栏最大水平溢出 0 px，键盘可打开窗格操作菜单。单次恢复耗时约 325 ms。
+
+### 预览包 1DGsWF 的备份回执定位
+
+以独立临时配置启动打包应用，通过插件管理页创建备份并点击回执定位按钮。读取 Finder 当前选择得到 workbench-packaged-6A1L12/backups/6b4dcfca-63d6-49cd-8d77-6b588243aa0d，与本次备份所在配置、父目录和标识一致。packaged.mjs --finder-reveal 退出码 0。本次只覆盖手动备份回执入口；升级失败页的定位按钮仍待单独验证。
+
+### 升级失败页的原生备份定位
+
+执行 future-plugin-data.cjs --legacy-limit --native-finder，在临时插件数据库注入无法迁移的数据，通过管理页触发升级。原生确认框由测试代答，失败页按钮调用真实 Finder。读取 Finder 选中项目并比较规范化完整路径，匹配升级前快照 f7b7aedf-0a9a-4836-8120-08c1e9c1e2eb。随后同一测试修正临时数据并完成升级，退出码 0。本次使用 Electron 源码构建。
+
+### 八窗格拖动时显示实时比例
+
+预览包 LW76Gs 通过 packaged.mjs --dense --drag。在八窗格布局中派发 90 次指针移动，校验分隔线提示显示当前左右百分比；拖动结束后修订号只增加一次，最终比例约 65:35。此轮验证横向拖动；纵向复用同一显示机制。
+
+### 八窗格嵌套分隔线
+
+在 LW76Gs 预览包运行 packaged.mjs --dense --drag，先拖动外层左右分隔线，再拖动左子树的上下分隔线，每次 90 个移动事件。两个方向均显示实时比例，释放后各增加一次修订。逐项比较持久化布局和全部视图，只有当次目标节点的比例变化。命令退出码 0。
