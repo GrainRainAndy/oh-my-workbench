@@ -72,10 +72,27 @@ export async function captureFlow({evaluate,send,sessionId,output}){
   await wait("document.activeElement===document.querySelector('.view-choice')");
   await press('Enter',13);
   await wait("!!document.querySelector('.swatches')");
+  assert.ok(await evaluate("Array.from(document.querySelectorAll('.swatches code')).every(el=>el.offsetWidth>0 && el.offsetWidth<=el.parentElement.clientWidth)"));
   await evaluate("document.querySelector('[aria-label=左右切分]').click()");
   await wait("!!document.querySelector('.view-choice:enabled')");
   await evaluate("Array.from(document.querySelectorAll('.view-choice')).find(b=>b.textContent.includes('计数器')).click()");
   await wait("document.querySelector('.tally-view output')?.textContent==='0'");
+  if(process.argv.includes('--system-theme')){
+    const emulate=value=>send('Emulation.setEmulatedMedia',{
+      features:[{name:'prefers-color-scheme',value}]
+    },sessionId);
+    const surface="getComputedStyle(document.querySelector('.pane')).backgroundColor";
+    const original=await evaluate("document.querySelector('.appearance select').value");
+    assert.equal(original,'light');
+    await emulate('dark');
+    await wait("matchMedia('(prefers-color-scheme: dark)').matches");
+    assert.equal(await evaluate(surface),'rgb(239, 241, 245)');
+    await evaluate("const picker=document.querySelector('.appearance select');picker.value='system';picker.dispatchEvent(new Event('change',{bubbles:true}))");
+    await wait(surface+"==='rgb(30, 30, 46)'");
+    await emulate('light');
+    await wait(surface+"==='rgb(239, 241, 245)'");
+    assert.equal(await evaluate("document.querySelectorAll('.pane').length"),2);
+  }
   await capture('split-workspace');
   await checkControls('split-workspace',[['separator',/^调整左右窗格比例$/],['button',/^后台导出$/],['button',/^记一次$/]]);
   await evaluate("document.querySelector('.job-export').click()");

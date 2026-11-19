@@ -1,4 +1,5 @@
 .palette{
+  margin:auto 0;
   width:100%;
   padding:clamp(14px, 3cqi, 32px);
   container-type:inline-size;
@@ -12,16 +13,21 @@
   border-bottom:1px solid var(--wb-line);
   font-weight:600;
 }
-.palette .palette-footer{justify-content:flex-end}
+.palette .palette-footer{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:18px}
+.palette-footer select{margin-left:10px}
+.palette .swatches{display:flex;overflow:hidden;border-radius:9px}
+.palette .swatches code{background:var(--wb-surface);color:var(--wb-text);font-size:11px;padding:2px 4px;border-radius:3px}
+.palette .css-export{border:1px solid var(--wb-line);padding:6px 10px}
+.palette .css-result{white-space:pre-wrap;background:var(--wb-subtle);color:var(--wb-accent-text);padding:12px;user-select:all;font-size:12px}
 .palette .swatches{height:clamp(112px, 52cqi, 240px)}
+@container (max-width: 340px){.palette .swatches code{display:none}}
 @container (max-width: 260px){
-  .palette .swatches code{display:none}
   .palette-footer label{display:grid;gap:6px}
   .palette-footer select{margin-left:0}
 }
 @container(max-width:260px){
   .palette .swatches{height:clamp(60px,35cqi,90px)}
-  .palette-footer{margin-top:8px}
+  .palette .palette-footer{margin-top:8px}
   .palette-footer label{display:flex;gap:5px;padding-bottom:6px}
 }
 
