@@ -1,0 +1,1 @@
+.tally-view{margin:auto;padding:24px;text-align:center}.tally-view>span{color:var(--wb-muted);font-size:13px}.tally-view output{display:block;font-size:clamp(48px,18cqi,112px);font-weight:550;line-height:1.2;letter-spacing:-.05em;font-variant-numeric:tabular-nums}.tally-view>div{display:flex;justify-content:center;gap:8px;margin-top:20px}

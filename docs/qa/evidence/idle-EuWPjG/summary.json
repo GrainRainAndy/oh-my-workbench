@@ -1,0 +1,21 @@
+{
+  "samples": 61,
+  "expected": 61,
+  "complete": true,
+  "elapsedSeconds": 1800,
+  "latestProcessCount": 4,
+  "summedRssMiB": {
+    "first": 420.140625,
+    "last": 348.59375,
+    "p50": 411.109375,
+    "p95": 421.546875,
+    "max": 421.671875
+  },
+  "summedCpuPercent": {
+    "first": 0,
+    "last": 0.1,
+    "p50": 0,
+    "p95": 0.1,
+    "max": 1.3
+  }
+}

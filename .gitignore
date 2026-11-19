@@ -4,3 +4,8 @@ target/
 spikes/**/dist/
 spikes/**/out/
 spikes/**/gen/
+
+apps/desktop/dist/
+apps/desktop/dist-main/
+
+release/

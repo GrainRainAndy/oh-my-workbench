@@ -1,0 +1,14 @@
+{
+  "bundle": "/Users/grainrain/Developer/GitHub/OhMyWorkbench/release/macos-arm64-avEnbQ/Oh My Workbench.app",
+  "started": "2026-11-18T00:41:53.489Z",
+  "loadAverage": [
+    1.748046875,
+    2.14404296875,
+    2.29150390625
+  ],
+  "macOS": "27.0.1",
+  "machine": "Apple M5",
+  "memoryBytes": "34359738368",
+  "signature": "# designated => cdhash H\"a6088c4c5d7eb7724baac2ea85b611891a657850\"",
+  "architecture": "arm64"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "fixture.palette",
+  "views": [
+    {
+      "type": "palette",
+      "title": "配色板",
+      "configVersion": 1,
+      "stateVersion": 1
+    }
+  ],
+  "name": "配色板",
+  "description": "浏览配色方案，在不同窗格中保留各自的选择。",
+  "usesServices": [
+    {
+      "id": "workbench.palette.css",
+      "version": "1.0.0",
+      "optional": true
+    }
+  ],
+  "jobs": [
+    {
+      "type": "export-css",
+      "title": "导出配色方案",
+      "service": "workbench.palette.css",
+      "version": "1.0.0",
+      "method": "format"
+    }
+  ]
+}

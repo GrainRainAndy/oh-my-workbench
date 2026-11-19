@@ -1,0 +1,16 @@
+{
+  "id": "fixture.tally",
+  "databaseVersion":1,
+  "backupDatabase":"counter.sqlite",
+  "name": "计数器",
+  "description": "跨工作区记录累计次数。",
+  "views": [{"type":"counter","title":"计数器","configVersion":1,"stateVersion":1}],
+  "usesServices": [{"id":"workbench.tally","version":"1.0.0"}],
+  "services": [{
+    "id":"workbench.tally","version":"1.0.0",
+    "methods":{
+      "read":{"input":"string","output":"string"},
+      "increment":{"input":"string","output":"string","invalidates":true}
+    }
+  }]
+}

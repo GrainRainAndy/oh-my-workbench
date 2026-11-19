@@ -1,0 +1,11 @@
+{
+  "binary": "/Users/grainrain/Developer/GitHub/OhMyWorkbench/release/macos-arm64-oKZaKA/Oh My Workbench.app/Contents/MacOS/Electron",
+  "pid": 46248,
+  "architecture": "arm64",
+  "started": "2026-11-18T01:20:13.359Z",
+  "macOS": "27.0.1",
+  "machine": "Apple M5",
+  "intervalSeconds": 300,
+  "durationSeconds": 7200,
+  "workload": "单配色视图，无任务；每五分钟交替开关窗口"
+}

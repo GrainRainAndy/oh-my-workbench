@@ -1,0 +1,15 @@
+{
+  "bundle": "/Users/grainrain/Developer/GitHub/OhMyWorkbench/release/macos-arm64-9suAIQ/Oh My Workbench.app",
+  "started": "2026-11-18T01:05:06.646Z",
+  "architecture": "arm64",
+  "machine": "Apple M5",
+  "macOS": "27.0.1",
+  "loadAverage": [
+    3.521484375,
+    3.64453125,
+    3.099609375
+  ],
+  "workload": "新配置，欢迎页，窗口打开，无任务",
+  "intervalSeconds": 30,
+  "durationSeconds": 1800
+}

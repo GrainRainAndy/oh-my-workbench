@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {exportLayout,importLayout} from '../../packages/host-core/src/workspace/transfer.ts';
+test('portable layout keeps unknown plugin configuration, excludes transient data, imports under fresh IDs',()=>{
+  const w={id:'w',name:'研究',revision:9,schemaVersion:1,activePaneId:'p',layout:{type:'leaf',paneId:'p',viewInstanceId:'v'},views:{v:{id:'v',viewType:'card',pluginId:'missing',configVersion:7,config:{filter:'周'},stateVersion:3,state:{draft:'private-text'},grant:'private-grant'}},jobs:['private-job']};
+  const text=exportLayout(w);
+  assert.doesNotMatch(text,/private-/);
+  const structure=JSON.parse(exportLayout(w,false)).workspace;
+  assert.deepEqual(structure.views.v.config,{});
+  assert.deepEqual(structure.layout,w.layout);
+  assert.deepEqual(w.views.v.config,{filter:'周'});
+  const imported=importLayout(text),view=imported.views[imported.layout.viewInstanceId];
+  assert.notEqual(imported.id,w.id);
+  assert.notEqual(imported.activePaneId,w.activePaneId);
+  assert.deepEqual(view.config,{filter:'周'});
+  assert.equal(view.configVersion,7);
+  assert.equal(view.pluginId,'missing');
+  assert.throws(()=>importLayout(text.replace('"version": 1','"version": 2')));
+  assert.throws(()=>importLayout(' '.repeat(5242881)));
+});

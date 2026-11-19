@@ -1,0 +1,4 @@
+{
+  "id":"fixture.css","name":"CSS 配色导出","description":"为配色板生成可复制的 CSS 变量。","views":[],
+  "services":[{"id":"workbench.palette.css","version":"1.0.0","methods":{"fromFile":{"input":"string","output":"string"},"format":{"input":"string[]","output":"string"}}}]
+}

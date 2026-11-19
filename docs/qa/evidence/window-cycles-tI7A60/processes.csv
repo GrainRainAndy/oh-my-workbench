@@ -1,0 +1,19 @@
+elapsed_seconds,window_count,pid,ppid,executable,rss_KiB,cpu_percent
+0.02,0,46248,46247,Electron,168688,43.8
+0.02,0,46249,46248,Electron Helper,92896,19
+0.02,0,46250,46248,Electron Helper,48720,9.6
+0.02,0,46252,46248,(Electron Helper ),0,0
+300.55,1,46248,46247,Electron,167008,3.2
+300.55,1,46249,46248,Electron Helper,88016,0.9
+300.55,1,46250,46248,Electron Helper,49200,0
+300.55,1,47750,46248,Electron Helper (Renderer),134304,12.7
+600.05,0,46248,46247,Electron,158592,4.3
+600.05,0,46249,46248,Electron Helper,73104,0.9
+600.05,0,46250,46248,Electron Helper,42720,0
+900.56,1,46248,46247,Electron,161136,3.7
+900.56,1,46249,46248,Electron Helper,78128,1.1
+900.56,1,46250,46248,Electron Helper,42752,0
+900.56,1,49801,46248,Electron Helper (Renderer),139504,15.6
+1556.20,0,46248,46247,Electron,161840,0
+1556.20,0,46249,46248,Electron Helper,74480,0
+1556.20,0,46250,46248,Electron Helper,43344,0

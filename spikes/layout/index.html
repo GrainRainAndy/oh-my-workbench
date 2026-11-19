@@ -1,0 +1,6 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'"><title>工作区布局验证</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font:15px system-ui;background:#f2f1ed;color:#23312f}header{padding:12px;display:flex;gap:8px;flex-wrap:wrap}button,select{font:inherit}main{overflow:auto;height:calc(100vh - 60px);padding:8px}.split{display:grid;gap:4px}.tree{height:100%}.pane{min-width:80px;min-height:56px;border:1px solid #a4b6ad;background:#fff;border-radius:5px}.pane[aria-pressed=true]{border:2px solid #24644e;background:#e4f2e9}
+</style>
+<header><button data-action="horizontal">左右切分</button><button data-action="vertical">上下切分</button><label>第一格占比 <select id="ratio"><option>0.3</option><option selected>0.5</option><option>0.7</option></select></label><button data-action="swap">与下一格交换</button><button data-action="close">关闭窗格</button></header>
+<main aria-label="工作区"></main><script type="module" src="./renderer.mjs"></script></html>

@@ -1,0 +1,25 @@
+{
+  "name": "oh-my-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "apps/desktop/main.cjs",
+  "scripts": {
+    "build": "vite build apps/desktop --base ./ && vite build --config apps/desktop/contracts.config.mjs && node scripts/build-shortcuts.mjs",
+    "start": "npm run build && electron .",
+    "test": "npm run typecheck && npm run check:boundaries && node --test tests/unit/*.test.mjs spikes/layout/layout.test.mjs spikes/runtime/tests/*.test.mjs",
+    "test:desktop": "npm run build && node tests/e2e/run-desktop.mjs",
+    "typecheck": "tsc --noEmit",
+    "check:boundaries": "node scripts/check-plugin-boundaries.mjs",
+    "package:mac": "npm run build && node scripts/package-macos.mjs"
+  },
+  "dependencies": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "electron": "45.3.4",
+    "typescript": "^5.9.3",
+    "vite": "7"
+  }
+}

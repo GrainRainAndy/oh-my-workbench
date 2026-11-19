@@ -1,5 +1,7 @@
 # 整体架构、数据流与生命周期
 
+> 最新决策（C）：用户已选定 Electron，M1 首个本地工具选定 Whisper 语音转写。下文早期候选状态作为历史记录。发布包、常驻资源和真实转写仍需分别验收。T01 已开始。
+
 状态：架构方向与可信基线已获用户确认；实现细节按技术验证结果收敛。Electron优先、Tauri对照，框架待证据冻结。不要将本文误作实现现状。
 
 ## 结构
@@ -62,3 +64,11 @@ queued→running→succeeded/failed；running→cancel_requested→cancelled 只
 macOS 关闭不退出；Dock/菜单/热键可重建窗口。退出关闭子进程与计时器，未完成任务留下恢复记录；强杀/系统关机无确认保证。Windows/Linux 仅协议和能力检测兼容设计，移动端另做 Shell 与生命周期，不维护未实际需要的万能 RuntimeAdapter。
 
 迁移实现补充：旧实例先停写并导出一致副本；新版本专用迁移运行器只绑定候选dataDirectory执行prepareData/migrate，禁止普通activate。校验成功、关闭数据库句柄后切换活动目录指针，结束迁移运行器，再以新活动目录启动正常世代。失败不修改旧活动指针；启动恢复通过journal与目录清单选择最后完整提交，不猜测半迁移数据。
+
+S05 实验适配器位于 spikes/layout，其 edit(snapshot, paneId, command) 只返回新的 LayoutNode。resize 操作修改目标叶子的直接父分割，swap 交换两个完整叶子，close 折叠分支，最后一格保留为空。视图和任务的生命周期由后续 SDK 与运行器管理。
+
+桌面入口 apps/desktop 将 React 渲染与主进程 SQLite 仓储分离。preload 仅暴露工作区 list/save；main 校验本窗口主 frame 和本地入口，仓储验证结构与视图引用后按 revision 条件写入。插件配置保持原始 JSON。首个 fixture 配色视图通过插件目录清单参与构建，独立配置通过宿主保存；运行期发现与世代管理尚待 T03。
+
+macOS 唤回快捷键由主进程加载 Node-API 模块，使用 Carbon 独占注册并持有句柄，通过线程安全回调进入现有 show() 路径。组合键与设置页采集的物理键位对应。先取得新键，再提交 SQLite 偏好并释放旧键；注册失败保留原设置。构建需要 macOS SDK、clang++ 与当前 Node 安装的开发头文件；打包时包含编译后的模块。
+
+服务运行器按提供者记录最近十秒内的启动失败、就绪超时和意外退出。窗口内达到三次失败后，新请求在派发前被拒绝；计数随时间过期，后续显式调用才会再启动后台。主动停用和退出不计入故障。此限速不重放已派发的任务。
