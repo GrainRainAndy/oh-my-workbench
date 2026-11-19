@@ -136,3 +136,9 @@ dialog.restore-confirm{inset:0;margin:auto;width:min(440px,calc(100vw - 40px));m
 .job-cancel-confirm { margin-block-start: 12px; border-inline-start: 3px solid var(--wb-line); padding-inline-start: 12px; }
 .job-cancel-confirm p { margin: 0 0 6px; }
 .job-cancel-confirm button { padding: 5px 9px; border: 1px solid var(--wb-line); margin-inline-end: 6px; }
+
+@media (max-height: 540px) {
+  .empty:has(.view-choices) { padding: 12px; align-content: start; }
+  .empty:has(.view-choices) .layout-icon { display: none; }
+  .empty:has(.view-choices) h2 { margin: 2px 0; }
+}

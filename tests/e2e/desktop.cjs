@@ -244,7 +244,7 @@ app.once('browser-window-created',(_event,win)=>{
       release.resolve();
       await until("document.querySelector('.pane')");
       await until("document.querySelector('.plugin:enabled')");
-      assert.deepEqual(await run("Array.from(document.querySelectorAll('.view-choice strong'),el=>el.textContent)"),['配色板','计数器']);
+      assert.deepEqual(await run("Array.from(document.querySelectorAll('.view-choice strong'),el=>el.textContent)"),['配色板','计数器','计数概览']);
       assert.match(await run("document.querySelector('.view-choice small').textContent"),/浏览配色方案/);
       const requests=win.webContents.session.webRequest;
       requests.onBeforeRequest({urls:['file://*/*']},(details,done)=>{
@@ -560,10 +560,17 @@ app.once('browser-window-created',(_event,win)=>{
       await until("document.querySelector('.tally-view output')?.textContent==='1'");
       await run("document.querySelector('[aria-label=左右切分]').click()");
       await until("document.querySelector('.empty .plugin:enabled')");
-      await run("Array.from(document.querySelectorAll('.empty .plugin')).find(b=>b.textContent.includes('计数器')).click()");
+      await run("Array.from(document.querySelectorAll('.empty .plugin')).find(b=>b.textContent.includes('计数概览')).click()");
       await until("[...document.querySelectorAll('.tally-view output')].filter(o=>o.textContent==='1').length===2");
       await run("document.querySelector('.tally-view .plugin').click()");
       await until("[...document.querySelectorAll('.tally-view output')].filter(o=>o.textContent==='2').length===2");
+
+      const reloadViews=new Promise(resolve=>win.webContents.once('did-finish-load',resolve));
+      win.reload();
+      await reloadViews;
+      await until("[...document.querySelectorAll('.tally-view output')].filter(o=>o.textContent==='2').length===2");
+      assert.deepEqual(await run("Array.from(document.querySelectorAll('.pane-title'),b=>b.textContent)"),['计数器','计数概览']);
+      assert.deepEqual(await run("Array.from(document.querySelectorAll('.tally-view'),v=>!!v.querySelector('.plugin'))"),[true,false]);
       await run("document.querySelectorAll('[aria-label=窗格操作]')[1].focus();document.activeElement.click()");
       await until("!!document.querySelector('.pane-options:modal')");
       await run("Array.from(document.querySelectorAll('.pane-options button')).find(b=>b.textContent==='关闭窗格').click()");

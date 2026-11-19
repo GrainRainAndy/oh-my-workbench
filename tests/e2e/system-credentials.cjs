@@ -35,7 +35,12 @@ async function verify(){
       assert.equal(bytes.includes(Buffer.from(sample)),false);
       assert.equal(bytes.includes(Buffer.from(handle)),false);
     }
+    // The owner can revoke while the asynchronous system decryption is pending.
+    let deliveries=0;
+    const pending=owner.use(handle,()=>{deliveries++;});
     assert.ok(owner.revoke(handle));
+    await assert.rejects(pending,/凭据不可用/);
+    assert.equal(deliveries,0);
     const replacement=await owner.store(randomBytes(32).toString('hex'));
     const beforeRestore=await owner.use(replacement,digest);
     const candidate=prepareRestore(profile,backup.id);

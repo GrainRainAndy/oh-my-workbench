@@ -5,7 +5,9 @@ const {NotDispatched,ConfirmedCancellation}=require('./dispatch-error.cjs');
 
 function matches(type,value){
   if(type==='string')return typeof value==='string'&&Buffer.byteLength(value)<=65536;
-  return type==='string[]'&&Array.isArray(value)&&value.length<=256&&value.every(item=>matches('string',item))&&Buffer.byteLength(JSON.stringify(value))<=65536;
+  if(type!=='string[]'||!Array.isArray(value)||value.length>256)return false;
+  for(const item of value)if(!matches('string',item))return false;
+  return Buffer.byteLength(JSON.stringify(value))<=65536;
 }
 function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
   const generations=new Map();
@@ -133,12 +135,13 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
   },async call(caller,{service,version,method,input},signal,onProgress,fileDelegate){
     const provider=resolveProvider(caller,{service,version,method,input});
     const spec=provider.services.find(s=>s.id===service&&s.version===version);
+    const submittedInput=Array.isArray(input)?input.slice():input;
     inFlight++;
     clearTimeout(idleTimer);
     let result,generation;
     try{
       generation=start(provider.id);
-      result=await generation.invoke({service,method,input},signal,onProgress,fileDelegate);
+      result=await generation.invoke({service,method,input:submittedInput},signal,onProgress,fileDelegate);
     }finally{inFlight--;scheduleIdle();}
     if(!matches(spec.methods[method].output,result))throw Error('服务结果无效');
     if(spec.methods[method].invalidates===true&&generations.get(provider.id)===generation)notify({service,version,provider:provider.id});

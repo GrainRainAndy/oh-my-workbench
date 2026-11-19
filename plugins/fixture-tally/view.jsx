@@ -1,7 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import './view.css';
 
-export default function Tally({services}){
+export default function Tally({services,viewType}){
   const api=useRef(services);
   api.current=services;
   const latest=useRef(0);
@@ -37,7 +37,7 @@ export default function Tally({services}){
   const atLimit=value===String(Number.MAX_SAFE_INTEGER);
   return <div className="tally-view">
     <span>累计次数</span><output aria-label="累计次数">{value??'—'}</output>
-    <div><button className="plugin" disabled={saving||value===null||atLimit} onClick={increment}>记一次</button>
+    <div>{viewType!=='counter-summary'&&<button className="plugin" disabled={saving||value===null||atLimit} onClick={increment}>记一次</button>}
     <button disabled={saving} onClick={read}>刷新</button></div>
     {atLimit&&<p role="status">已达计数上限。</p>}
     {error&&<p role="alert">{error}</p>}

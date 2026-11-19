@@ -15,6 +15,7 @@ export interface JobReceipt {
 
 /** Public capabilities passed by the host to each mounted React view. */
 export interface ViewProps<Config extends object, State extends object = Record<string, unknown>> {
+  readonly viewType: string;
   registerController(controller: ViewController): () => void;
   config: Readonly<Config>;
   updateConfig(config: Config): Promise<void>;

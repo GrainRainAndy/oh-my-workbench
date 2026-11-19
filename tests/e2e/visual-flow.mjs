@@ -45,8 +45,15 @@ export async function captureFlow({evaluate,send,sessionId,output}){
     input.dispatchEvent(new Event('input',{bubbles:true}));}`);
   await evaluate("document.querySelector('dialog form').requestSubmit()");
   await wait("!!document.querySelector('.view-choice:enabled')");
+  if(process.argv.includes('--compact')){
+    assert.ok(await evaluate(`(()=>{
+      const last=document.querySelector('.view-choice:last-child').getBoundingClientRect();
+      const pane=document.querySelector('.pane').getBoundingClientRect();
+      return last.bottom<=pane.bottom && last.bottom<=innerHeight;
+    })()`),'Last view choice is clipped');
+  }
   await capture('choose-view');
-  await checkControls('choose-view',[['button',/^配色板/],['button',/^计数器/],['button',/^左右切分$/]]);
+  await checkControls('choose-view',[['button',/^配色板/],['button',/^计数器/],['button',/^计数概览/],['button',/^左右切分$/]]);
   await evaluate("document.querySelector('.view-choice').click()");
   await wait("!!document.querySelector('.swatches')");
   await evaluate("document.querySelector('[aria-label=左右切分]').click()");

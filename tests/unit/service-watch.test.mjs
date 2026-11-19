@@ -66,3 +66,29 @@ test('retired workers cannot invalidate a replacement or acknowledge its outstan
   assert.equal(services.busy(),false);
   services.close();
 });
+
+test('service array contracts reject holes in both directions and dispatch the validated values',async()=>{
+  const {createServices}=await import('../../packages/host-core/src/runtime/services.cjs');
+  const service={id:'echo',version:'1',methods:{echo:{input:'string[]',output:'string[]'}}};
+  const plugin={id:'example',enabled:true,usesServices:[service],services:[service]};
+  let starts=0,sparseReply=false;
+  const broker=createServices({plugins:{list:()=>[plugin]},fork(){
+    starts++;
+    const child=new EventEmitter();
+    child.kill=()=>{};
+    child.postMessage=request=>queueMicrotask(()=>child.emit('message',{id:request.id,result:sparseReply?Array(1):request.input}));
+    queueMicrotask(()=>child.emit('message',{ready:true}));
+    return child;
+  }});
+  const call=input=>broker.call(plugin.id,{service:'echo',version:'1',method:'echo',input});
+  try{
+    await assert.rejects(call(Array(1)),/服务参数无效/);
+    assert.equal(starts,0);
+    const input=['before'];
+    const pending=call(input);
+    input[0]='after';
+    assert.deepEqual(await pending,['before']);
+    sparseReply=true;
+    await assert.rejects(call([]),/服务结果无效/);
+  }finally{broker.close();}
+});
