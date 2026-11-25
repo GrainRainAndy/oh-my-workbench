@@ -1,0 +1,1563 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>日常工作 · OhMyWorkbench 组合评审稿</title>
+  <style>
+* { box-sizing: border-box; }
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+  color: #1d1d1f;
+  background: #ececef;
+  font-synthesis: none;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --blue: #007aff;
+  --red: #ff3b30;
+  --orange: #ff9500;
+  --green: #28a745;
+  --purple: #af52de;
+  --canvas: #e9e9ec;
+  --sidebar: #f2f2f4;
+  --surface: #ffffff;
+  --surface-2: #f6f6f8;
+  --surface-3: #ededf0;
+  --text: #1d1d1f;
+  --secondary: #6e6e73;
+  --tertiary: #737379;
+  --line: rgba(60, 60, 67, 0.14);
+  --line-strong: rgba(60, 60, 67, 0.22);
+  --selection: rgba(0, 122, 255, 0.12);
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+html, body { margin: 0; width: 100%; min-height: 100%; }
+body { color: var(--text); background: var(--canvas); font-size: 14px; line-height: 1.45; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button, select { cursor: pointer; }
+button { border: 0; padding: 0; background: none; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 65%, transparent);
+  outline-offset: 2px;
+}
+button:disabled { opacity: 0.4; cursor: default; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4, p { margin: 0; }
+ul { list-style: none; padding: 0; margin: 0; }
+svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+.icon { display: inline-grid; place-items: center; flex: none; }
+.icon svg { display: block; }
+.muted { color: var(--secondary); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Host */
+.workbench { height: 100%; display: flex; overflow: hidden; background: var(--canvas); color: var(--text); }
+.host-sidebar {
+  width: 216px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 11px 12px;
+  background: color-mix(in srgb, var(--sidebar) 94%, transparent);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+.traffic-lights { height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 8px; flex: none; }
+.traffic-lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.12); }
+.traffic-lights i:nth-child(2) { background: #febc2e; }
+.traffic-lights i:nth-child(3) { background: #28c840; }
+.host-brand { display: flex; align-items: center; gap: 9px; padding: 6px 9px 23px; font-size: 15px; font-weight: 670; letter-spacing: -0.02em; }
+.host-brand .app-mark { width: 28px; height: 28px; display: grid; place-items: center; color: white; border-radius: 8px; background: linear-gradient(145deg, #0a84ff, #0060df); box-shadow: inset 0 0.5px 0.5px rgba(255,255,255,.45); }
+.host-brand .app-mark svg { width: 17px; height: 17px; stroke-width: 1.8; }
+.nav-section-label { display: flex; align-items: center; justify-content: space-between; min-height: 28px; padding: 0 8px; color: var(--secondary); font-size: 11px; font-weight: 600; }
+.nav-section-label button { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 5px; }
+.nav-section-label button:hover { background: var(--surface-3); }
+.nav-section-label svg { width: 14px; height: 14px; }
+.workspace-list { display: grid; gap: 2px; }
+.workspace-item { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 35px; padding: 6px 9px; text-align: left; border-radius: 7px; color: var(--text); transition: background-color 120ms ease; }
+.workspace-item svg { width: 16px; height: 16px; color: var(--secondary); }
+.workspace-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-item:hover { background: color-mix(in srgb, var(--surface-3) 60%, transparent); }
+.workspace-item[aria-current="page"] { background: var(--surface-3); font-weight: 580; }
+.workspace-item[aria-current="page"] svg { color: var(--blue); }
+.sidebar-spacer { flex: 1; min-height: 24px; }
+.host-services { padding-top: 10px; border-top: 1px solid var(--line); }
+.local-status { display: flex; align-items: center; gap: 7px; color: var(--secondary); font-size: 11px; padding: 13px 9px 0; }
+.local-status i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.sidebar-resize { width: 5px; margin-left: -3px; z-index: 5; cursor: col-resize; touch-action: none; position: relative; }
+.sidebar-resize::after { content: ""; position: absolute; inset: 0 2px; background: transparent; transition: background-color 120ms ease; }
+.sidebar-resize:hover::after, .sidebar-resize:focus-visible::after, .sidebar-resize[data-dragging="true"]::after { background: color-mix(in srgb, var(--blue) 45%, transparent); }
+.host-main { min-width: 0; min-height: 0; flex: 1; display: flex; flex-direction: column; }
+.host-toolbar { min-height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 17px; background: color-mix(in srgb, var(--surface) 94%, transparent); border-bottom: 1px solid var(--line); flex: none; }
+.host-title { min-width: 0; }
+.host-title h1 { font-size: 16px; line-height: 1.25; font-weight: 650; letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.save-state { color: var(--tertiary); font-size: 10px; }
+.host-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.host-button, .icon-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 29px; height: 29px; padding: 0 7px; border-radius: 6px; color: var(--secondary); transition: color 120ms ease, background-color 120ms ease, transform 120ms var(--ease-out); }
+.host-button { border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 12px; }
+.host-button:hover, .icon-button:hover { background: var(--surface-3); color: var(--text); }
+.host-button:active, .icon-button:active, .primary-button:active, .tile:active { transform: scale(0.97); }
+.host-button svg, .icon-button svg { width: 16px; height: 16px; }
+.sidebar-toggle { display: none; }
+.workspace-tree { flex: 1; min-height: 0; min-width: 0; padding: 8px; overflow: hidden; }
+
+/* Recursive pane layout */
+.split { display: grid; width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.split.x { grid-template-columns: minmax(0, var(--ratio)) 8px minmax(0, calc(100% - var(--ratio) - 8px)); }
+.split.y { grid-template-rows: minmax(0, var(--ratio)) 8px minmax(0, calc(100% - var(--ratio) - 8px)); grid-template-columns: minmax(0, 1fr); }
+.split > .pane, .split > .split { min-width: 0; min-height: 0; }
+.divider { position: relative; z-index: 4; touch-action: none; background: transparent; }
+.divider.x { cursor: col-resize; }
+.divider.y { cursor: row-resize; }
+.divider::before { content: ""; position: absolute; background: var(--line-strong); opacity: 0; transition: opacity 120ms ease, background-color 120ms ease; }
+.divider.x::before { inset: 10px 3px; border-radius: 2px; }
+.divider.y::before { inset: 3px 10px; border-radius: 2px; }
+.divider:hover::before, .divider:focus-visible::before, .divider[data-dragging="true"]::before { opacity: 1; background: var(--blue); }
+.pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; container-type: inline-size; }
+.pane-chrome { height: 38px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 9px 0 12px; color: var(--secondary); background: var(--surface); border-bottom: 1px solid var(--line); position: relative; z-index: 6; }
+.pane-identity { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 12px; }
+.pane-identity strong { color: var(--text); font-weight: 590; white-space: nowrap; }
+.pane-identity .icon svg { width: 15px; height: 15px; }
+.pane-calendar > .pane-chrome .pane-identity .icon { color: var(--red); }
+.pane-todo > .pane-chrome .pane-identity .icon { color: var(--blue); }
+.pane-launcher > .pane-chrome .pane-identity .icon { color: var(--orange); }
+.pane-actions { display: flex; align-items: center; gap: 1px; margin-left: auto; }
+.pane-actions .icon-button { min-width: 25px; width: 25px; height: 25px; padding: 0; }
+.pane-actions .icon-button svg { width: 14px; height: 14px; }
+.pane-body { flex: 1; min-height: 0; min-width: 0; overflow: auto; position: relative; }
+.pane.is-zoomed { position: absolute; inset: 8px; z-index: 12; box-shadow: var(--shadow); }
+.empty-pane { min-height: 100%; display: grid; place-content: center; gap: 16px; padding: 24px; text-align: center; }
+.empty-pane h2 { font-size: 19px; letter-spacing: -0.02em; }
+.empty-pane p { color: var(--secondary); font-size: 12px; }
+.empty-choices { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.empty-choices button { display: flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+
+/* Shared controls */
+.primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 5px 13px; border-radius: 7px; color: #fff; background: var(--blue); font-size: 12px; font-weight: 570; transition: background-color 120ms ease, transform 120ms var(--ease-out); }
+.primary-button:hover { background: color-mix(in srgb, var(--blue) 88%, #000); }
+.secondary-button { display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 5px 13px; border-radius: 7px; background: var(--surface-3); font-size: 12px; }
+.text-button { color: var(--blue); font-size: 12px; padding: 4px; border-radius: 4px; }
+.segmented { display: inline-flex; align-items: center; padding: 2px; border-radius: 7px; background: var(--surface-3); }
+.segmented button { min-width: 35px; min-height: 24px; padding: 2px 8px; border-radius: 5px; color: var(--secondary); font-size: 11px; transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease; }
+.segmented button[aria-pressed="true"] { color: var(--text); background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.12); font-weight: 580; }
+.plugin-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.plugin-toolbar .toolbar-end { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+.date-navigation { display: flex; align-items: center; gap: 2px; }
+.date-navigation button { min-width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; color: var(--secondary); font-size: 11px; }
+.date-navigation button:hover { color: var(--text); background: var(--surface-3); }
+.date-navigation svg { width: 14px; height: 14px; }
+.date-heading h2 { font-size: 22px; line-height: 1.15; letter-spacing: -0.035em; font-weight: 680; }
+.date-heading p { color: var(--red); font-size: 11px; font-weight: 600; }
+.badge { display: inline-flex; align-items: center; min-height: 18px; padding: 1px 6px; border-radius: 5px; background: var(--surface-3); color: var(--secondary); font-size: 10px; white-space: nowrap; }
+.badge.today { color: var(--red); background: color-mix(in srgb, var(--red) 10%, transparent); }
+.quick-add { display: flex; align-items: center; gap: 7px; }
+.quick-add input { min-width: 0; flex: 1; height: 32px; padding: 5px 9px; border: 1px solid transparent; border-radius: 7px; background: var(--surface-2); outline: none; }
+.quick-add input:focus { border-color: color-mix(in srgb, var(--blue) 55%, transparent); background: var(--surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 10%, transparent); }
+.quick-add button { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 50%; background: var(--blue); color: white; }
+.quick-add button svg { width: 15px; height: 15px; }
+
+/* A: Calendar time grid */
+.calendar-native { min-height: 100%; display: flex; flex-direction: column; }
+.calendar-native > .plugin-toolbar { padding: 15px 17px 10px; }
+.calendar-native .date-heading { margin-right: auto; }
+.week-strip { display: grid; grid-template-columns: 49px minmax(0, 1fr); padding: 0 12px 8px 5px; border-bottom: 1px solid var(--line); }
+.week-strip::before { content: ""; }
+.day-select { display: grid; justify-items: center; gap: 2px; padding: 4px 2px; border-radius: 7px; color: var(--secondary); }
+.day-select small { font-size: 10px; }
+.day-select b { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%; color: var(--text); font-size: 13px; font-weight: 540; font-variant-numeric: tabular-nums; }
+.day-select[aria-current="date"] b { color: white; background: var(--red); }
+.day-select:hover { background: var(--surface-2); }
+.all-day-row { display: grid; grid-template-columns: 49px minmax(0, 1fr); min-height: 27px; padding: 3px 12px 3px 5px; border-bottom: 1px solid var(--line); }
+.all-day-row > span { color: var(--tertiary); font-size: 9px; text-align: right; padding: 3px 7px 0 0; }
+.all-day-event { margin: 0 3px; padding: 2px 6px; overflow: hidden; border-radius: 4px; color: color-mix(in srgb, var(--event) 72%, var(--text)); background: color-mix(in srgb, var(--event) 15%, var(--surface)); font-size: 10px; white-space: nowrap; text-overflow: ellipsis; }
+.time-scroll { flex: 1; min-height: 360px; overflow: auto; }
+.time-grid { --hour: 62px; display: grid; grid-template-columns: 49px minmax(0, 1fr); height: calc(var(--hour) * 12); min-height: 620px; padding: 0 12px 0 5px; }
+.calendar-clip { min-width: 0; overflow: clip; }
+.calendar-track { display: flex; height: 100%; }
+.calendar-page { display: grid; flex: 0 0 100%; min-width: 0; grid-template-columns: repeat(var(--days), minmax(0, 1fr)); }
+.calendar-track > [data-before] { margin-left: -100%; }
+.calendar-native { touch-action: pan-y pinch-zoom; }
+.calendar-native[data-panning] { user-select: none; cursor: grabbing; }
+.time-axis { position: relative; }
+.time-axis span { position: absolute; right: 8px; transform: translateY(-50%); color: var(--tertiary); font-size: 9px; font-variant-numeric: tabular-nums; }
+.time-axis span:first-child { transform: none; }
+.day-column { position: relative; border-left: 1px solid var(--line); background-image: repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent var(--hour)); background-position: 0 0; }
+.day-column.is-today { background-color: color-mix(in srgb, var(--red) 2%, transparent); }
+.time-event { position: absolute; z-index: 1; overflow: hidden; padding: 4px 6px; text-align: left; border-radius: 5px; color: color-mix(in srgb, var(--event) 70%, var(--text)); background: color-mix(in srgb, var(--event) 15%, var(--surface)); border-left: 3px solid var(--event); box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--event) 15%, transparent); transition: filter 120ms ease, box-shadow 120ms ease; }
+.time-event:hover { filter: brightness(0.98); box-shadow: 0 2px 8px color-mix(in srgb, var(--event) 18%, transparent); z-index: 2; }
+.time-event strong { display: block; font-size: 11px; line-height: 1.3; font-weight: 620; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.time-event small { display: block; margin-top: 2px; font-size: 9px; line-height: 1.25; opacity: 0.82; font-variant-numeric: tabular-nums; }
+.time-event.is-short { padding-top: 2px; }
+.time-event.is-short small { display: none; }
+
+.compact-event { width: 100%; display: flex; align-items: center; gap: 9px; padding: 7px 0; text-align: left; border-bottom: 1px solid var(--line); }
+.compact-event > i { width: 3px; height: 29px; border-radius: 2px; background: var(--event); }
+.compact-event time { width: 39px; color: var(--secondary); font-size: 10px; font-variant-numeric: tabular-nums; }
+.compact-event span { min-width: 0; }
+.compact-event strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 580; }
+.compact-event small { display: block; color: var(--secondary); font-size: 9px; }
+
+/* Reminders */
+.todo-view { min-height: 100%; display: flex; flex-direction: column; padding: 14px 15px 18px; }
+.todo-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.todo-heading h2 { color: var(--blue); font-size: 25px; line-height: 1.1; letter-spacing: -0.045em; font-weight: 700; }
+.todo-heading .count { color: var(--secondary); font-size: 11px; }
+.todo-heading .icon-button { margin-left: auto; color: var(--blue); }
+.todo-filters { display: flex; gap: 4px; margin-bottom: 12px; overflow-x: auto; }
+.todo-filters button { flex: none; padding: 4px 8px; border-radius: 6px; color: var(--secondary); font-size: 10px; }
+.todo-filters button[aria-pressed="true"] { color: var(--blue); background: color-mix(in srgb, var(--blue) 10%, transparent); font-weight: 600; }
+.todo-view > .quick-add { margin-bottom: 10px; }
+.todo-group-title { display: flex; align-items: center; justify-content: space-between; margin: 13px 1px 3px; color: var(--secondary); font-size: 10px; font-weight: 600; }
+.todo-row { position: relative; display: grid; grid-template-columns: 27px minmax(0, 1fr) auto; align-items: start; gap: 5px; min-height: 43px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.check-button { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; color: white; }
+.check-circle { width: 19px; height: 19px; display: grid; place-items: center; border: 1.5px solid color-mix(in srgb, var(--blue) 50%, var(--line-strong)); border-radius: 50%; transition: background-color 150ms ease, border-color 150ms ease, transform 120ms var(--ease-out); }
+.check-button:active .check-circle { transform: scale(0.88); }
+.todo-row.is-complete .check-circle { background: var(--blue); border-color: var(--blue); }
+.check-circle svg { width: 12px; height: 12px; stroke-width: 2.4; opacity: 0; }
+.todo-row.is-complete .check-circle svg { opacity: 1; }
+.todo-title { min-width: 0; display: block; padding: 1px 0; text-align: left; }
+.todo-title strong { display: block; font-size: 12px; line-height: 1.4; font-weight: 480; overflow-wrap: anywhere; }
+.todo-title small { display: flex; align-items: center; gap: 5px; margin-top: 2px; color: var(--secondary); font-size: 9px; }
+.todo-row.is-complete .todo-title strong { color: var(--tertiary); text-decoration: line-through; }
+.priority-flag { color: var(--orange); font-size: 10px; padding-top: 4px; }
+.todo-row .row-more { width: 24px; height: 24px; display: grid; place-items: center; color: var(--tertiary); border-radius: 5px; opacity: 0; }
+.todo-row:hover .row-more, .todo-row:focus-within .row-more { opacity: 1; }
+.todo-empty { padding: 28px 8px; color: var(--secondary); text-align: center; font-size: 12px; }
+.inline-detail { grid-column: 2 / -1; display: grid; gap: 9px; padding: 9px 0 12px; }
+.inline-detail label { display: grid; gap: 3px; color: var(--secondary); font-size: 10px; }
+.inline-detail input, .inline-detail textarea, .inline-detail select, .dialog-form input, .dialog-form textarea, .dialog-form select { width: 100%; min-height: 31px; padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); outline: none; }
+.inline-detail textarea, .dialog-form textarea { min-height: 64px; resize: vertical; }
+.inline-detail input:focus, .inline-detail textarea:focus, .inline-detail select:focus, .dialog-form input:focus, .dialog-form textarea:focus, .dialog-form select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 12%, transparent); }
+.inline-detail .form-actions { display: flex; justify-content: flex-end; gap: 7px; }
+
+/* Launcher */
+.launcher-view { min-height: 100%; padding: 16px; }
+.launcher-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.launcher-heading h2 { font-size: 21px; line-height: 1.1; letter-spacing: -0.035em; }
+.launcher-heading .icon-button { margin-left: auto; }
+.launcher-section-title { margin: 18px 1px 8px; color: var(--secondary); font-size: 10px; font-weight: 600; }
+.launch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: 7px; }
+.tile { min-width: 0; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 9px 5px; border-radius: 9px; text-align: center; transition: background-color 120ms ease, transform 120ms var(--ease-out); }
+.tile:hover { background: var(--surface-2); }
+.tile-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; color: var(--tile-color, var(--blue)); background: color-mix(in srgb, var(--tile-color, var(--blue)) 12%, var(--surface)); box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--tile-color, var(--blue)) 10%, transparent); }
+.tile-icon svg { width: 23px; height: 23px; stroke-width: 1.5; }
+.tile span:last-child { max-width: 100%; font-size: 10px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.launch-list { display: grid; gap: 3px; }
+.launch-list .tile { min-height: 54px; flex-direction: row; justify-content: flex-start; text-align: left; padding: 6px 8px; gap: 10px; }
+.launch-list .tile-icon { width: 36px; height: 36px; border-radius: 9px; }
+.launch-list .tile-icon svg { width: 20px; height: 20px; }
+.launch-list .tile > span:last-child { font-size: 12px; -webkit-line-clamp: 1; }
+.launcher-note { margin-top: 15px; color: var(--tertiary); font-size: 9px; text-align: center; }
+
+.context-menu { position: fixed; z-index: 60; min-width: 190px; padding: 5px; border: 1px solid var(--line-strong); border-radius: 10px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(22px) saturate(160%); box-shadow: var(--shadow); transform-origin: var(--menu-origin, top left); animation: menu-enter 160ms var(--ease-out); }
+.context-menu .menu-label { padding: 6px 9px 5px; color: var(--tertiary); font-size: 10px; }
+.context-menu button { width: 100%; min-height: 30px; display: flex; align-items: center; gap: 8px; padding: 5px 9px; text-align: left; border-radius: 6px; font-size: 12px; }
+.context-menu button:hover, .context-menu button:focus-visible { color: white; background: var(--blue); outline: none; }
+.context-menu button svg { width: 15px; height: 15px; }
+.context-menu .danger { color: #ff3b30; }
+.context-menu .menu-separator { height: 1px; margin: 4px 6px; background: var(--line); }
+@keyframes menu-enter { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.editor-dialog { width: min(410px, calc(100vw - 32px)); max-height: min(680px, calc(100dvh - 48px)); padding: 0; overflow: auto; color: var(--text); border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface); box-shadow: 0 24px 80px rgba(0,0,0,.24); }
+.editor-dialog[open] { animation: dialog-enter 220ms var(--ease-out); }
+.editor-dialog::backdrop { background: rgba(0,0,0,.24); backdrop-filter: blur(2px); }
+@keyframes dialog-enter { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.dialog-header { display: flex; align-items: center; padding: 18px 20px 10px; }
+.dialog-header h2 { font-size: 19px; letter-spacing: -0.025em; }
+.dialog-header .icon-button { margin-left: auto; }
+.dialog-form { display: grid; gap: 12px; padding: 5px 20px 20px; }
+.dialog-form label { display: grid; gap: 5px; color: var(--secondary); font-size: 11px; }
+.dialog-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dialog-form .form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 5px; }
+.dialog-form .delete-button { margin-right: auto; color: var(--red); font-size: 12px; padding: 5px 0; }
+.dialog-hint { color: var(--secondary); font-size: 11px; line-height: 1.55; }
+.toast { position: fixed; z-index: 80; left: 50%; bottom: 22px; max-width: min(440px, calc(100vw - 30px)); padding: 9px 15px; border-radius: 10px; color: white; background: rgba(38,38,40,.92); box-shadow: 0 8px 28px rgba(0,0,0,.2); font-size: 12px; pointer-events: none; opacity: 0; transform: translate(-50%, 10px); transition: opacity 180ms ease, transform 220ms var(--ease-out); }
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+@container (max-width: 460px) {
+  .calendar-native > .plugin-toolbar { padding: 11px; }
+  .calendar-native .date-heading h2 { font-size: 18px; }
+  .calendar-native .date-heading p { display: none; }
+  .calendar-native .plugin-toolbar .segmented { order: 3; }
+  .agenda-view { padding: 16px; }
+  .agenda-header h2 { font-size: 28px; }
+  .agenda-date-strip { gap: 2px; margin: 16px 0; }
+  .agenda-item { grid-template-columns: 43px 13px minmax(0, 1fr); gap: 6px; }
+  .month-day { min-height: 48px; }
+  .month-event-chip { display: none; }
+  .month-day.has-events > b::after { content: ""; width: 3px; height: 3px; position: absolute; margin-top: 29px; border-radius: 50%; background: var(--red); }
+  .search-results { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 980px) {
+  .demo-switcher { gap: 8px; padding: 0 10px; }
+  .demo-home span { display: none; }
+  .demo-tabs a { padding: 3px 8px; }
+  .host-sidebar { width: 178px; }
+  .host-actions .host-button > span:not(.icon) { display: none; }
+  .workspace-tree { padding: 5px; }
+}
+@media (max-width: 760px) {
+  #app { min-height: 700px; }
+  .demo-home { display: none; }
+  .demo-tabs { margin-left: 0; }
+  .demo-tabs a { font-size: 0; gap: 0; }
+  .demo-tabs a b { font-size: 11px; }
+  .host-sidebar { display: none; }
+  .sidebar-resize { display: none; }
+  .sidebar-toggle { display: inline-flex; }
+  .workspace-tree { overflow: auto; }
+  .split { display: flex !important; flex-direction: column; height: auto; gap: 8px; }
+  .split > .pane { min-height: 410px; flex: none; }
+  .split > .split { height: auto; }
+  .divider { display: none; }
+  .concept-grid { grid-template-columns: 1fr; }
+  .comparison-notes { grid-template-columns: 1fr; }
+  .index-shell { width: min(100% - 30px, 620px); padding-top: 40px; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .concept-card:hover { transform: translateY(-2px); }
+  .tile:hover .tile-icon { transform: translateY(-1px); }
+  .tile-icon { transition: transform 160ms var(--ease-out); }
+}
+body[data-input="keyboard"] .context-menu, body[data-input="keyboard"] .editor-dialog[open] { animation: none; }
+body[data-input="keyboard"] .toast { transform: translate(-50%, 0); transition: opacity 160ms ease; }
+@media (prefers-reduced-transparency: reduce) {
+  .context-menu { background: var(--surface); backdrop-filter: none; }
+  .editor-dialog::backdrop { backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  :root { --line: rgba(60,60,67,.35); --line-strong: rgba(60,60,67,.55); }
+  body[data-concept="planner"] { --line: rgba(255,255,255,.3); --line-strong: rgba(255,255,255,.5); }
+  .muted, .save-state, .todo-title small { color: var(--text); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .context-menu, .editor-dialog[open] { animation: none; }
+  .toast { transform: translate(-50%, 0); transition: opacity 160ms ease; }
+  .concept-card:hover, .tile:hover .tile-icon { transform: none; }
+  button, a, .tile-icon, .check-circle { transition-duration: 0ms !important; }
+}
+
+/* The pane title rail reserves space for controls at every split ratio. */
+body { --canvas: #f0f1f4; --sidebar: #f6f6f8; --blue: #1265bc; --red: #d53c35; --text: #232529; --secondary: #595e68; --tertiary: #656b75; }
+#app { height: 100dvh; min-height: 0; }
+.host-toolbar { height: 58px; background: transparent; border: 0; padding-inline: 19px; }
+.host-title h1 { font-size: 19px; letter-spacing: -.035em; }
+.workspace-tree { padding: 0 12px 12px; }
+.workspace-tree > .pane { height: 100%; }
+.pane { border-radius: 16px; border-color: rgba(49,54,61,.14); box-shadow: 0 1px 3px rgba(32,40,50,.04); }
+.pane-chrome { height: 40px; padding-inline: 16px 10px; gap: 4px; border: 0; background: transparent; }
+.pane-identity { overflow: hidden; }
+.pane-identity strong { overflow: hidden; text-overflow: ellipsis; color: var(--secondary); font-size: 11px; }
+.pane-actions { flex: none; }
+.pane-actions .icon-button { width: 26px; height: 24px; color: #545964; }
+.pane-actions .icon-button:hover { color: var(--text); background: #e3e5e9; }
+@media (hover: hover) and (pointer: fine) {
+  .pane-actions { opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-out); }
+  .pane:hover > .pane-chrome .pane-actions, .pane-chrome:focus-within .pane-actions { opacity: 1; pointer-events: auto; }
+  .tile:hover .tile-icon { transform: none; }
+}
+body[data-input="keyboard"] .pane-actions { transition: none; }
+@container (max-width: 260px) {
+  .pane-chrome { padding-inline: 8px; }
+  .pane-actions [data-action="close-pane"] { display: none; }
+}
+@container (max-width: 165px) {
+  .pane-chrome { padding-inline: 3px; gap: 0; }
+  .pane-identity { display: none; }
+  .pane-actions { max-width: 100%; overflow-x: auto; }
+}
+.calendar-native { height: 100%; min-height: 0; }
+.calendar-native > .plugin-toolbar { flex: none; gap: 8px; padding: 6px 20px 14px; }
+.calendar-native .date-heading p { display: block; font-size: 12px; font-weight: 600; color: var(--red); }
+.calendar-native .date-heading h2 { font-size: clamp(24px, 4.6cqw, 36px); margin-top: 3px; line-height: 1.18; }
+.date-heading h2 span { font-weight: 500; }
+.calendar-native .date-navigation { background: var(--surface-2); border-radius: 8px; padding: 2px; }
+.calendar-native .toolbar-end { gap: 9px; }
+.plugin-add { width: 30px; min-width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+.calendar-native .plugin-add { color: var(--red); background: #fbece9; }
+.week-strip { flex: none; padding-bottom: 7px; }
+.all-day-cell { display: grid; align-content: start; min-width: 0; gap: 2px; }
+.time-scroll { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.time-event strong { font-size: 12px; }
+.time-event small { font-size: 10px; color: var(--text); }
+.todo-view,.launcher-view { padding: 3px 20px 15px; }
+.todo-heading,.launcher-heading { min-height: 34px; }
+.todo-heading h2 { font-size: 28px; }
+.launcher-heading h2 { font-size: 24px; }
+.todo-heading .plugin-add { color: var(--blue); background: #e6f0fb; }
+.todo-title strong { font-size: 13px; }
+.todo-title small,.todo-group-title,.todo-filters button { font-size: 11px; }
+.todo-composer { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #81a9d3; border-radius: 8px; background: #f6faff; }
+.new-task-marker { width: 16px; height: 16px; border: 1.5px dashed #8fa8c2; border-radius: 50%; flex: none; }
+.todo-composer input { min-width: 0; flex: 1; border: 0; outline: 0; padding: 4px 0; background: transparent; font-size: 13px; }
+.composer-submit { color: var(--blue); font-size: 12px; font-weight: 600; }
+.launcher-heading .plugin-add { color: #8b6500; background: #fff2c4; }
+.launcher-section-title { margin: 12px 0 5px; font-size: 11px; }
+.launch-grid { grid-template-columns: repeat(auto-fill, minmax(min(62px,100%),1fr)); gap: 5px; }
+.tile { min-height: 60px; padding: 5px 0; gap: 6px; }
+.tile-icon { width: 34px; height: 34px; border-radius: 9px; }
+.tile-icon svg { width: 20px; height: 20px; }
+.launcher-empty { grid-column: 1/-1; font-size: 12px; color: var(--secondary); padding-block: 8px; }
+.pin-form [hidden] { display: none; }
+.pin-form fieldset { border: 0; min-inline-size: 0; margin: 0; padding: 0; }
+.pin-form .pin-types { display: flex; background: var(--surface-3); border-radius: 9px; padding: 3px; gap: 2px; }
+.pin-types label { display: block; flex: 1; position: relative; cursor: pointer; }
+.pin-types input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pin-types span { display: block; padding: 5px; border-radius: 6px; text-align: center; font-size: 13px; }
+.pin-types input:checked + span { background: white; color: var(--text); font-weight: 600; box-shadow: 0 1px 3px #0002; }
+.pin-types input:focus-visible + span { outline: 2px solid var(--blue); }
+.catalog legend { color: var(--secondary); font-size: 12px; margin: 4px 0 6px; }
+.catalog .catalog-item { display: flex; align-items: center; gap: 12px; padding: 8px 2px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.catalog-item strong { font-size: 14px; font-weight: 550; color: var(--text); }
+.catalog .catalog-item input { width: 17px; height: 17px; margin-left: auto; accent-color: var(--blue); }
+.place-fields p { margin-top: 8px; }
+@container (max-width: 350px) {
+  .calendar-native > .plugin-toolbar,.launcher-view,.todo-view { padding-inline: 12px; }
+  .calendar-native .toolbar-end { gap: 3px; }
+}
+@media (max-width: 760px) {
+  .workspace-tree > .split > .pane-calendar { height: 68dvh; }
+  .workspace-tree > .split .pane { min-height: 0; }
+  .workspace-tree > .split .pane-body { max-height: 75dvh; }
+  .workspace-tree > .split .pane-calendar { min-height: 360px; }
+  .host-toolbar { height: 46px; }
+  .pane-actions { opacity: 1; pointer-events: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pane-actions { transition: none; }
+}
+
+  </style>
+</head>
+<body data-concept="workbench">
+  <main id="app"></main>
+  <div id="overlay-root"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+(() => {
+  'use strict';
+
+  const TODAY = '2026-11-24';
+  const STORAGE_KEY = 'omw-combined-review-v1';
+  const concept = 'workbench';
+  const app = document.getElementById('app');
+  const overlay = document.getElementById('overlay-root');
+  let draftTitle = '';
+  let localStatus = '本机演示';
+  let toastTimer;
+  let calendarResizeObserver;
+  let calendarPan = null;
+  const transient = { zoom: null, newTaskPane: null, calendarDaysByPane: {}, menuAnchor: null };
+
+  const paths = {
+    workbench: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M10 3v18M10 12h11"/>',
+    workspace: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/>',
+    todo: '<path d="M4 7l2 2 4-5M12 7h8M4 16l2 2 4-5M12 16h8"/>',
+    launcher: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+    folder: '<path d="M3 7V5a2 2 0 012-2h5l2 3h7a2 2 0 012 2v10a3 3 0 01-3 3H6a3 3 0 01-3-3V7z"/>',
+    app: '<rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    more: '<circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/>',
+    left: '<path d="M15 5l-7 7 7 7"/>',
+    right: '<path d="M9 5l7 7-7 7"/>',
+    down: '<path d="M6 9l6 6 6-6"/>',
+    splitX: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/>',
+    splitY: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 12h18"/>',
+    maximize: '<rect x="3" y="3" width="18" height="18" rx="2"/>',
+    restore: '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
+    plugins: '<path d="M9 3h6v5h5v6h-5v6H9v-5H4V9h5V3z"/>',
+    jobs: '<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M16 16l5 5"/>',
+    check: '<path d="M5 12l4 4L19 6"/>',
+    flag: '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    location: '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1114 0z"/><circle cx="12" cy="10" r="2"/>',
+    note: '<path d="M5 3h14v18H5zM8 8h8M8 12h8M8 16h5"/>',
+    external: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6"/>',
+    inbox: '<path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5"/>',
+    file: '<path d="M6 3h8l4 4v14H6zM14 3v5h4"/>',
+    reset: '<path d="M4 10a8 8 0 111 7M4 4v6h6"/>'
+  };
+
+  function icon(name, className = '') {
+    return `<span class="icon ${className}" aria-hidden="true"><svg viewBox="0 0 24 24">${paths[name] || paths.app}</svg></span>`;
+  }
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  }
+  function uid(prefix) { return `${prefix}-${crypto.randomUUID()}`; }
+  function leaf(kind) { return { id: uid('p'), kind }; }
+  function branch(axis, a, b, ratio = 0.5) { return { id: uid('n'), axis, a, b, ratio }; }
+
+  const initialEvents = [
+    { id: 'e1', date: TODAY, title: '产品同步', start: '09:30', end: '10:15', location: '三楼会议室', calendar: '工作', color: '#ff3b30', notes: '确认首版范围与评审顺序。' },
+    { id: 'e2', date: TODAY, title: '用户访谈', start: '11:00', end: '12:00', location: '线上会议', calendar: '设计', color: '#af52de', notes: '关注工作区切换与窗格恢复。' },
+    { id: 'e3', date: TODAY, title: '设计走查', start: '11:30', end: '12:15', location: '设计工作室', calendar: '工作', color: '#ff9500', notes: '检查窄窗格与键盘焦点。' },
+    { id: 'e4', date: TODAY, title: '交互方案评审', start: '14:00', end: '15:30', location: '二楼讨论区', calendar: '设计', color: '#af52de', notes: '比较四版原型，记录需要合并的细节。' },
+    { id: 'e5', date: TODAY, title: '整理评审结论', start: '16:00', end: '16:30', location: '', calendar: '个人', color: '#0a84ff', notes: '' },
+    { id: 'e6', date: '2026-11-25', title: '开发对齐', start: '10:00', end: '11:00', location: '线上会议', calendar: '工作', color: '#ff3b30', notes: '' },
+    { id: 'e7', date: '2026-11-25', title: '组件走查', start: '15:00', end: '16:00', location: '设计工作室', calendar: '设计', color: '#af52de', notes: '' },
+    { id: 'e8', date: '2026-11-26', title: '发布检查', allDay: true, calendar: '工作', color: '#ff3b30', location: '', notes: '' },
+    { id: 'e9', date: '2026-11-26', title: '视觉回归检查', start: '13:30', end: '14:30', location: '', calendar: '工作', color: '#ff9500', notes: '' },
+    { id: 'e10', date: '2026-11-27', title: '周报', start: '16:00', end: '16:30', location: '', calendar: '工作', color: '#ff3b30', notes: '' },
+    { id: 'e11', date: '2026-11-23', title: '需求整理', start: '09:00', end: '10:00', location: '', calendar: '个人', color: '#0a84ff', notes: '' },
+    { id: 'e12', date: '2026-11-28', title: '周末阅读', start: '10:30', end: '12:00', location: '家', calendar: '个人', color: '#0a84ff', notes: '' },
+    { id: 'e13', date: '2026-11-20', title: '原型讨论', start: '14:00', end: '15:00', location: '线上会议', calendar: '设计', color: '#af52de', notes: '' },
+    { id: 'e14', date: '2026-12-02', title: '版本回顾', start: '15:00', end: '16:00', location: '三楼会议室', calendar: '工作', color: '#ff3b30', notes: '' }
+  ];
+  const initialTasks = [
+    { id: 't1', title: '整理用户访谈摘录', list: '设计', due: TODAY, priority: 'high', completed: false, notes: '归类为导航、分屏和恢复三个主题。' },
+    { id: 't2', title: '确认工作区导航方案', list: '设计', due: TODAY, priority: 'medium', completed: false, notes: '' },
+    { id: 't3', title: '分享周会纪要', list: '协作', due: TODAY, priority: 'none', completed: true, notes: '' },
+    { id: 't4', title: '预约图书馆座位', list: '个人', due: '2026-11-25', priority: 'low', completed: false, notes: '' },
+    { id: 't5', title: '补充键盘操作说明', list: '设计', due: '2026-11-27', priority: 'medium', completed: false, notes: '覆盖分隔线、窗格切换与搜索。' },
+    { id: 't6', title: '备份本地数据', list: '个人', due: '', priority: 'none', completed: false, notes: '' },
+    { id: 't7', title: '清理下载文件夹', list: '个人', due: '', priority: 'none', completed: false, notes: '' }
+  ];
+  const initialPins = [
+    { id: 'pin1', kind: 'folder', label: '项目资料', detail: '文件夹', color: '#0a84ff' },
+    { id: 'pin2', kind: 'folder', label: '设计手稿', detail: '文件夹', color: '#ff9500' },
+    { id: 'pin3', kind: 'app', label: '备忘录', detail: '应用', color: '#e6b800' },
+    { id: 'pin4', kind: 'app', label: 'VS Code', detail: '应用', color: '#007aff' }
+  ];
+  const pluginItems = [
+    { id: 'calendar', kind: 'calendar', label: '日程', detail: '插件', color: '#ff3b30' },
+    { id: 'todo', kind: 'todo', label: '待办', detail: '插件', color: '#0a84ff' },
+    { id: 'launcher', kind: 'launcher', label: '快捷入口', detail: '插件', color: '#ff9500' }
+  ];
+
+  function defaultLayout(which, workspace = 'daily') {
+    if (workspace !== 'daily') return branch('x', leaf('launcher'), leaf('todo'), 0.46);
+    return branch('x', leaf('calendar'), branch('y', leaf('todo'), leaf('launcher'), 0.56), 0.64);
+  }
+  function defaults() {
+    const layouts = {};
+    for (const ws of ['daily', 'design']) layouts[`${ws}:${concept}`] = defaultLayout(concept, ws);
+    return {
+      workspaces: [{ id: 'daily', name: '日常工作' }, { id: 'design', name: '设计评审' }],
+      workspace: 'daily', layouts, events: structuredClone(initialEvents), tasks: structuredClone(initialTasks), pins: structuredClone(initialPins), pluginPins: ['calendar', 'todo'],
+      selectedDate: TODAY, calendarDays: 7, todoFilter: 'open', hiddenCalendars: [], sidebarWidth: 216
+    };
+  }
+  function loadState() {
+    const base = defaults();
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (!stored || !Array.isArray(stored.events) || !Array.isArray(stored.tasks)) return base;
+      return { ...base, ...stored, layouts: { ...base.layouts, ...(stored.layouts || {}) } };
+    } catch { return base; }
+  }
+  let state = loadState();
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStatus = '已保存到本机';
+    } catch {
+      localStatus = '本次打开期间有效';
+    }
+    const label = app.querySelector('.local-status span');
+    if (label) label.textContent = localStatus;
+  }
+  function treeKey() { return `${state.workspace}:${concept}`; }
+  function tree() {
+    if (!state.layouts[treeKey()]) state.layouts[treeKey()] = defaultLayout(concept, state.workspace);
+    return state.layouts[treeKey()];
+  }
+  function setTree(next) { state.layouts[treeKey()] = next; save(); }
+  function workspace() { return state.workspaces.find(item => item.id === state.workspace) || state.workspaces[0]; }
+
+  function findNode(node, id) {
+    if (!node) return null;
+    if (node.id === id) return node;
+    return node.axis ? findNode(node.a, id) || findNode(node.b, id) : null;
+  }
+  function updateNode(node, id, update) {
+    if (node.id === id) return update(node);
+    if (!node.axis) return node;
+    return { ...node, a: updateNode(node.a, id, update), b: updateNode(node.b, id, update) };
+  }
+  function removeNode(node, id) {
+    if (node.id === id) return null;
+    if (!node.axis) return node;
+    const a = removeNode(node.a, id);
+    const b = removeNode(node.b, id);
+    if (!a) return b;
+    if (!b) return a;
+    return { ...node, a, b };
+  }
+  function leaves(node) { return node.axis ? [...leaves(node.a), ...leaves(node.b)] : [node]; }
+
+  const dateObj = value => new Date(`${value}T12:00:00Z`);
+  const iso = date => date.toISOString().slice(0, 10);
+  function shift(value, amount, unit = 'days') {
+    const date = dateObj(value);
+    if (unit === 'months') { date.setUTCDate(1); date.setUTCMonth(date.getUTCMonth() + amount); }
+    else date.setUTCDate(date.getUTCDate() + amount);
+    return iso(date);
+  }
+  const weekdayIndex = value => (dateObj(value).getUTCDay() + 6) % 7;
+  const weekdayName = value => `星期${'日一二三四五六'[dateObj(value).getUTCDay()]}`;
+  function monthLabel(value) { const d = dateObj(value); return `${d.getUTCFullYear()}年${d.getUTCMonth() + 1}月`; }
+  function fullDateLabel(value) { const d = dateObj(value); return `${d.getUTCMonth() + 1}月${d.getUTCDate()}日 ${weekdayName(value)}`; }
+  function minutes(time) { return Number(time.slice(0, 2)) * 60 + Number(time.slice(3)); }
+  function visibleEvents() { return state.events.filter(event => !state.hiddenCalendars.includes(event.calendar)); }
+  function eventsFor(date) { return visibleEvents().filter(event => event.date === date).sort((a, b) => (a.start || '').localeCompare(b.start || '')); }
+
+  function notify(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2600);
+  }
+
+  function closeMenu(restoreFocus = false) {
+    const menu = overlay.querySelector('.context-menu');
+    if (menu) menu.remove();
+    if (restoreFocus && transient.menuAnchor?.isConnected) transient.menuAnchor.focus();
+    transient.menuAnchor = null;
+  }
+  function openMenu(anchor, label, items) {
+    closeMenu();
+    transient.menuAnchor = anchor;
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', label);
+    menu.innerHTML = `<div class="menu-label">${esc(label)}</div>` + items.map((item, index) => item.separator
+      ? '<div class="menu-separator" role="separator"></div>'
+      : `<button type="button" role="menuitem" data-menu-index="${index}" class="${item.danger ? 'danger' : ''}">${item.icon ? icon(item.icon) : ''}<span>${esc(item.label)}</span></button>`).join('');
+    overlay.append(menu);
+    const rect = anchor.getBoundingClientRect();
+    const width = menu.offsetWidth;
+    const height = menu.offsetHeight;
+    const left = Math.max(8, Math.min(innerWidth - width - 8, rect.right - width));
+    const top = Math.max(8, Math.min(innerHeight - height - 8, rect.bottom + 5));
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.style.setProperty('--menu-origin', `${rect.left - left + rect.width / 2}px ${top > rect.bottom ? 'top' : 'bottom'}`);
+    menu.querySelectorAll('[data-menu-index]').forEach(button => button.addEventListener('click', () => {
+      const item = items[Number(button.dataset.menuIndex)];
+      closeMenu();
+      item.action();
+    }));
+    menu.querySelector('button')?.focus();
+  }
+
+  function closeDialog() {
+    const dialog = overlay.querySelector('dialog');
+    if (dialog?.open) dialog.close();
+  }
+  function showDialog(title, body, options = {}) {
+    closeMenu();
+    closeDialog();
+    const dialog = document.createElement('dialog');
+    dialog.className = 'editor-dialog';
+    dialog.setAttribute('aria-labelledby', 'dialog-title');
+    dialog.innerHTML = `<div class="dialog-header"><h2 id="dialog-title">${esc(title)}</h2><button class="icon-button" type="button" data-close-dialog aria-label="关闭">${icon('close')}</button></div>${body}`;
+    overlay.append(dialog);
+    dialog.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.addEventListener('close', () => { dialog.remove(); options.onClose?.(); });
+    dialog.showModal();
+    dialog.querySelector('input:not([type="hidden"]), textarea, select')?.focus();
+    return dialog;
+  }
+  function confirmAction(title, message, confirmLabel, action) {
+    const dialog = showDialog(title, `<form class="dialog-form" id="confirm-form"><p class="dialog-hint">${esc(message)}</p><div class="form-actions"><button type="button" class="secondary-button" data-close-dialog>取消</button><button class="primary-button" type="submit">${esc(confirmLabel)}</button></div></form>`);
+    dialog.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('#confirm-form').addEventListener('submit', event => {
+      event.preventDefault();
+      dialog.close();
+      action();
+    });
+  }
+
+  function eventForm(event) {
+    const item = event || { title: '', date: state.selectedDate, start: '09:00', end: '10:00', location: '', calendar: '工作', notes: '', allDay: false };
+    return `<form class="dialog-form" data-form="event" data-id="${esc(event?.id || '')}">
+      <label>标题<input name="title" required maxlength="160" value="${esc(item.title)}" placeholder="日程名称"></label>
+      <div class="form-row"><label>日期<input name="date" type="date" required value="${esc(item.date)}"></label><label>日历<select name="calendar">${['工作', '设计', '个人'].map(name => `<option ${item.calendar === name ? 'selected' : ''}>${name}</option>`).join('')}</select></label></div>
+      ${item.allDay ? '<input type="hidden" name="allDay" value="true"><p class="dialog-hint">全天日程</p>' : `<div class="form-row"><label>开始<input name="start" type="time" required value="${esc(item.start)}"></label><label>结束<input name="end" type="time" required value="${esc(item.end)}"></label></div>`}
+      <label>地点<input name="location" value="${esc(item.location)}" placeholder="可选"></label>
+      <label>备注<textarea name="notes" maxlength="4000" placeholder="可选">${esc(item.notes)}</textarea></label>
+      <p class="form-error" role="alert" style="color:var(--red);font-size:11px"></p>
+      <div class="form-actions">${event ? `<button class="delete-button" type="button" data-delete-event="${esc(event.id)}">删除日程</button>` : ''}<button class="secondary-button" type="button" data-close-dialog>取消</button><button class="primary-button" type="submit">保存</button></div>
+    </form>`;
+  }
+  function openEvent(id = null) {
+    const event = state.events.find(item => item.id === id);
+    showDialog(event ? '编辑日程' : '新建日程', eventForm(event));
+  }
+  function openTask(id) {
+    const task = state.tasks.find(item => item.id === id);
+    if (!task) return;
+    showDialog('待办详情', `<form class="dialog-form" data-form="task" data-id="${esc(id)}">
+      <label>标题<input name="title" required maxlength="160" value="${esc(task.title)}"></label>
+      <div class="form-row"><label>到期日期<input name="due" type="date" value="${esc(task.due)}"></label><label>优先级<select name="priority">${[['none','无'],['low','低'],['medium','中'],['high','高']].map(([value,label]) => `<option value="${value}" ${task.priority === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div>
+      <label>备注<textarea name="notes" maxlength="4000">${esc(task.notes)}</textarea></label>
+      <div class="form-actions"><button class="delete-button" type="button" data-delete-task="${esc(id)}">删除待办</button><button class="secondary-button" type="button" data-close-dialog>取消</button><button class="primary-button" type="submit">保存</button></div>
+    </form>`);
+  }
+  function deleteEvent(id) {
+    const event = state.events.find(item => item.id === id);
+    if (!event) return;
+    confirmAction('删除日程？', `「${event.title}」将从所有工作区的日程中移除。`, '删除日程', () => {
+      state.events = state.events.filter(item => item.id !== id);
+      save(); render(); notify('日程已删除');
+    });
+  }
+  function deleteTask(id) {
+    const task = state.tasks.find(item => item.id === id);
+    if (!task) return;
+    confirmAction('删除待办？', `「${task.title}」将从所有工作区的待办中移除。`, '删除待办', () => {
+      state.tasks = state.tasks.filter(item => item.id !== id);
+      save(); render(); notify('待办已删除');
+    });
+  }
+
+  function paneHeader(node) {
+    const labels = { calendar: '日程', todo: '待办', launcher: '快捷入口', empty: '空窗格' };
+    const icons = { calendar: 'calendar', todo: 'todo', launcher: 'launcher', empty: 'workspace' };
+    const zoomed = transient.zoom === node.id;
+    return `<header class="pane-chrome">
+      <div class="pane-identity">${icon(icons[node.kind])}<strong>${labels[node.kind]}</strong></div>
+      <div class="pane-actions" role="group" aria-label="窗格操作">
+        <button class="icon-button" type="button" data-action="split-x" data-id="${node.id}" aria-label="在右侧切分窗格" title="在右侧切分">${icon('splitX')}</button>
+        <button class="icon-button" type="button" data-action="split-y" data-id="${node.id}" aria-label="在下方切分窗格" title="在下方切分">${icon('splitY')}</button>
+        <button class="icon-button" type="button" data-action="zoom" data-id="${node.id}" aria-label="${zoomed ? '还原窗格' : '最大化窗格'}" title="${zoomed ? '还原' : '最大化'}">${icon(zoomed ? 'restore' : 'maximize')}</button>
+        <button class="icon-button" type="button" data-action="pane-menu" data-id="${node.id}" aria-label="窗格操作" title="窗格操作">${icon('more')}</button>
+        <button class="icon-button" type="button" data-action="close-pane" data-id="${node.id}" aria-label="关闭窗格" title="关闭窗格">${icon('close')}</button>
+      </div>
+    </header>`;
+  }
+  function renderTree(node) {
+    if (node.axis) {
+      return `<div class="split ${node.axis}" data-node-id="${node.id}" style="--ratio:${Math.round(node.ratio * 1000) / 10}%">
+        ${renderTree(node.a)}
+        <div class="divider ${node.axis}" role="separator" tabindex="0" data-divider-id="${node.id}" aria-label="调整${node.axis === 'x' ? '左右' : '上下'}窗格比例" aria-orientation="${node.axis === 'x' ? 'vertical' : 'horizontal'}" aria-valuemin="15" aria-valuemax="85" aria-valuenow="${Math.round(node.ratio * 100)}" title="拖动调整比例；方向键微调，双击均分"></div>
+        ${renderTree(node.b)}
+      </div>`;
+    }
+    return `<section class="pane pane-${node.kind}" data-pane-id="${node.id}" aria-label="${{ calendar: '日程', todo: '待办', launcher: '快捷入口', empty: '空窗格' }[node.kind]}">
+      ${paneHeader(node)}<div class="pane-body">${renderPlugin(node)}</div>
+    </section>`;
+  }
+  function renderPlugin(node) {
+    if (node.kind === 'calendar') return renderCalendar(node);
+    if (node.kind === 'todo') return renderTodo(node);
+    if (node.kind === 'launcher') return renderLauncher(node);
+    return `<div class="empty-pane"><h2>选择一个插件</h2><div class="empty-choices">${pluginItems.map(item => `<button type="button" data-action="replace-pane" data-id="${node.id}" data-kind="${item.kind}">${icon(item.kind)}${item.label}</button>`).join('')}</div></div>`;
+  }
+
+  function calendarToolbar(days) {
+    const selected = dateObj(state.selectedDate);
+    return `<div class="plugin-toolbar">
+      <div class="date-heading"><p>${monthLabel(state.selectedDate)}</p><h2>${selected.getUTCDate()}日 <span>${weekdayName(state.selectedDate)}</span></h2></div>
+      <div class="toolbar-end"><div class="date-navigation">
+        <button type="button" data-action="calendar-prev" aria-label="向前${days}天">${icon('left')}</button><button type="button" data-action="calendar-today">今天</button><button type="button" data-action="calendar-next" aria-label="向后${days}天">${icon('right')}</button>
+      </div><button class="icon-button plugin-add" type="button" data-action="new-event" aria-label="新建日程" title="新建日程">${icon('plus')}</button></div>
+    </div>`;
+  }
+  function layoutEvents(events) {
+    const sorted = events.filter(event => !event.allDay).sort((a, b) => a.start.localeCompare(b.start));
+    const result = [];
+    const lanesById = new Map();
+    let cluster = [];
+    let clusterEnd = -1;
+    function finish() {
+      if (!cluster.length) return;
+      const laneEnds = [];
+      for (const event of cluster) {
+        let lane = laneEnds.findIndex(end => end <= minutes(event.start));
+        if (lane < 0) { lane = laneEnds.length; laneEnds.push(0); }
+        laneEnds[lane] = minutes(event.end);
+        lanesById.set(event.id, lane);
+      }
+      for (const event of cluster) result.push({ event, lane: lanesById.get(event.id), lanes: laneEnds.length });
+      cluster = [];
+    }
+    for (const event of sorted) {
+      if (cluster.length && minutes(event.start) >= clusterEnd) finish();
+      if (!cluster.length) clusterEnd = minutes(event.end);
+      else clusterEnd = Math.max(clusterEnd, minutes(event.end));
+      cluster.push(event);
+    }
+    finish();
+    return result;
+  }
+  function calendarDaysFor(node) {
+    return transient.calendarDaysByPane[node.id] || 7;
+  }
+  function visibleDates(selected, days) {
+    const offset = days === 7 ? -weekdayIndex(selected) : days === 5 ? -1 : 0;
+    return Array.from({ length: days }, (_, index) => shift(selected, offset + index));
+  }
+
+  function calendarPage(dates, selected, firstHour) {
+    const heading = dates.map(date => `<button type="button" class="day-select" data-action="select-date" data-date="${date}" aria-pressed="${date === selected}" ${date === TODAY ? 'aria-current="date"' : ''} aria-label="${fullDateLabel(date)}"><small>周${'一二三四五六日'[weekdayIndex(date)]}</small><b>${dateObj(date).getUTCDate()}</b></button>`).join('');
+    const allDay = dates.map(date => `<div class="all-day-cell">${eventsFor(date).filter(event => event.allDay).map(event =>
+      `<button type="button" class="all-day-event" style="--event:${event.color}" data-action="edit-event" data-id="${event.id}">${esc(event.title)}</button>`
+    ).join('')}</div>`).join('');
+    const times = dates.map(date => {
+      const events = layoutEvents(eventsFor(date)).map(({ event, lane, lanes }) => {
+          const top = (minutes(event.start) - firstHour * 60) / 60 * 62;
+          const height = Math.max(18, (minutes(event.end) - minutes(event.start)) / 60 * 62 - 2);
+          return `<button type="button" class="time-event ${height < 40 ? 'is-short' : ''}" style="--event:${event.color};top:${top}px;height:${height}px;left:calc(${lane / lanes * 100}% + 2px);width:calc(${100 / lanes}% - 5px)" data-action="edit-event" data-id="${event.id}" title="${esc(event.title)}，${event.start}–${event.end}"><strong>${esc(event.title)}</strong><small>${event.start}–${event.end}${height >= 52 && event.location ? `<br>${esc(event.location)}` : ''}</small></button>`;
+      }).join('');
+      return `<div class="day-column ${date === TODAY ? 'is-today' : ''}" data-date="${date}">${events}</div>`;
+    }).join('');
+    return [heading, allDay, times];
+  }
+
+  function renderCalendar(node) {
+    const days = calendarDaysFor(node);
+    const dates = visibleDates(state.selectedDate, days);
+    const timed = dates.flatMap(eventsFor).filter(event => !event.allDay);
+    const firstHour = Math.min(8, ...timed.map(event => Math.floor(minutes(event.start) / 60)));
+    const endHour = Math.max(20, ...timed.map(event => Math.ceil(minutes(event.end) / 60)));
+    const hours = Array.from({ length: endHour - firstHour }, (_, i) => firstHour + i);
+    const [heading, allDay, times] = calendarPage(dates, state.selectedDate, firstHour).map(cells =>
+      `<div class="calendar-clip"><div class="calendar-track"><div class="calendar-page">${cells}</div></div></div>`
+    );
+    return `<div class="calendar-native" style="--days:${days}" data-visible-days="${days}" data-first-hour="${firstHour}">
+      ${calendarToolbar(days)}
+      <div class="week-strip">${heading}</div>
+      <div class="all-day-row"><span>全天</span>${allDay}</div>
+      <div class="time-scroll"><div class="time-grid" style="height:${hours.length * 62}px">
+        <div class="time-axis">${hours.map(hour => `<span style="top:${(hour - firstHour) * 62}px">${String(hour).padStart(2, '0')}:00</span>`).join('')}</div>
+        ${times}
+      </div></div>
+    </div>`;
+  }
+
+  function filteredTasks() {
+    return state.tasks.filter(task => {
+      if (state.todoFilter === 'completed') return task.completed;
+      if (task.completed) return false;
+      if (state.todoFilter === 'today') return task.due && task.due <= TODAY;
+      if (state.todoFilter === 'planned') return Boolean(task.due);
+      return true;
+    });
+  }
+  function taskGroup(task) {
+    if (task.completed) return '已完成';
+    if (!task.due) return '未安排';
+    if (task.due <= TODAY) return '今天';
+    return '已计划';
+  }
+  function renderTask(task) {
+    const flag = { high: '!!!', medium: '!!', low: '!' }[task.priority] || '';
+    return `<li class="todo-row ${task.completed ? 'is-complete' : ''}" data-task-id="${task.id}">
+      <button type="button" class="check-button" data-action="toggle-task" data-id="${task.id}" aria-label="${task.completed ? '恢复' : '完成'}${esc(task.title)}" aria-pressed="${task.completed}"><span class="check-circle">${icon('check')}</span></button>
+      <button type="button" class="todo-title" data-action="edit-task" data-id="${task.id}" aria-haspopup="dialog"><strong>${esc(task.title)}</strong><small>${esc(task.list)}${task.due ? ` · ${task.due === TODAY ? '今天' : task.due.slice(5).replace('-', '月') + '日'}` : ''}</small></button>
+      ${flag ? `<span class="priority-flag" aria-label="${{high:'高',medium:'中',low:'低'}[task.priority]}优先级">${flag}</span>` : `<button type="button" class="row-more" data-action="task-menu" data-id="${task.id}" aria-label="${esc(task.title)}的操作">${icon('more')}</button>`}
+
+    </li>`;
+  }
+  function renderTodo(node) {
+    const tasks = filteredTasks();
+    const groups = [];
+    for (const task of tasks) {
+      const name = taskGroup(task);
+      if (!groups.includes(name)) groups.push(name);
+    }
+    const remaining = state.tasks.filter(task => !task.completed).length;
+    const composing = transient.newTaskPane === node.id;
+    return `<div class="todo-view">
+      <div class="todo-heading"><h2>待办</h2><span class="count">${remaining} 项</span><button class="icon-button plugin-add" type="button" data-action="focus-new-task" data-id="${node.id}" aria-label="${composing ? '取消新建待办' : '新建待办'}" aria-expanded="${composing}">${icon(composing ? 'close' : 'plus')}</button></div>
+      <div class="todo-filters" aria-label="待办筛选">${[['open','待完成'],['today','今天'],['planned','计划内'],['completed','已完成']].map(([filter,label]) => `<button type="button" data-action="todo-filter" data-filter="${filter}" aria-pressed="${state.todoFilter === filter}">${label}</button>`).join('')}</div>
+      ${composing ? `<form class="todo-composer" data-form="new-task" data-pane-id="${node.id}"><span class="new-task-marker" aria-hidden="true"></span><input name="title" required maxlength="160" aria-label="新待办名称" placeholder="待办事项" value="${esc(draftTitle)}" autocomplete="off"><button class="composer-submit" type="submit">添加</button></form>` : ''}
+      <div class="todo-items">${tasks.length ? groups.map(group => `<section><h3 class="todo-group-title">${group}<span>${tasks.filter(task => taskGroup(task) === group).length}</span></h3><ul>${tasks.filter(task => taskGroup(task) === group).map(renderTask).join('')}</ul></section>`).join('') : `<p class="todo-empty">${state.todoFilter === 'completed' ? '还没有已完成事项。' : state.todoFilter === 'today' ? '今天没有到期事项。' : '这里暂时没有待办。'}</p>`}</div>
+    </div>`;
+  }
+
+  function launcherIcon(item) {
+    return icon(item.kind === 'folder' ? 'folder' : item.kind === 'app' ? 'app' : item.kind);
+  }
+  function renderTile(item, source) {
+    const isPlugin = source === 'plugin';
+    return `<button type="button" class="tile" style="--tile-color:${item.color}" data-action="launch" data-source="${source}" data-id="${item.id}" data-context="launcher" title="${esc(item.label)}${isPlugin ? '，单击原位打开，右键更多操作' : ''}"><span class="tile-icon">${launcherIcon(item)}</span><span>${esc(item.label)}</span></button>`;
+  }
+  function pinnedPlugins() {
+
+    const ids = Array.isArray(state.pluginPins) ? state.pluginPins : ['calendar', 'todo'];
+    return ids.map(id => pluginItems.find(item => item.id === id)).filter(Boolean);
+  }
+  function renderLauncher() {
+
+    const plugins = pinnedPlugins();
+    return `<div class="launcher-view"><div class="launcher-heading"><h2>快捷入口</h2><button class="icon-button plugin-add" type="button" data-action="add-pin" aria-label="添加快捷入口" title="添加快捷入口">${icon('plus')}</button></div>
+      <section><h3 class="launcher-section-title">常用位置</h3><div class="launch-grid">${state.pins.map(item => renderTile(item, 'pin')).join('')}</div></section>
+      <section><h3 class="launcher-section-title">插件</h3><div class="launch-grid plugin-grid">${plugins.map(item => renderTile(item, 'plugin')).join('')}${plugins.length ? '' : '<p class="launcher-empty">尚未添加插件入口，可从右上角添加入口选择。</p>'}</div></section>
+
+    </div>`;
+  }
+
+  function renderSidebar() {
+    return `<aside class="host-sidebar" style="width:${state.sidebarWidth || 216}px" aria-label="工作区导航">
+      <div class="traffic-lights" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="host-brand"><span class="app-mark">${icon('workbench')}</span>Workbench</div>
+      <div class="nav-section-label">工作区<button type="button" data-action="new-workspace" aria-label="新建工作区">${icon('plus')}</button></div>
+      <nav class="workspace-list">${state.workspaces.map(item => `<button type="button" class="workspace-item" data-action="switch-workspace" data-id="${item.id}" aria-current="${item.id === state.workspace ? 'page' : 'false'}">${icon('workspace')}<span>${esc(item.name)}</span></button>`).join('')}</nav>
+      <div class="sidebar-spacer"></div>
+      <nav class="host-services workspace-list" aria-label="应用服务"><button type="button" class="workspace-item" data-action="host-service" data-service="plugins">${icon('plugins')}<span>插件管理</span></button><button type="button" class="workspace-item" data-action="host-service" data-service="jobs">${icon('jobs')}<span>任务中心</span></button><button type="button" class="workspace-item" data-action="host-service" data-service="settings">${icon('settings')}<span>桌面设置</span></button></nav>
+      <div class="local-status"><i></i><span>${localStatus}</span></div>
+    </aside><div class="sidebar-resize" role="separator" tabindex="0" aria-label="调整侧栏宽度" aria-orientation="vertical" aria-valuemin="160" aria-valuemax="300" aria-valuenow="${state.sidebarWidth || 216}"></div>`;
+  }
+  function renderToolbar() {
+    return `<header class="host-toolbar"><div class="host-title"><h1>${esc(workspace().name)}</h1></div>
+      <div class="host-actions"><button class="icon-button" type="button" data-action="workspace-menu" aria-label="工作区操作" title="工作区操作">${icon('more')}</button></div></header>`;
+  }
+  function render() {
+    closeMenu();
+    calendarDrag = null;
+    stopCalendarPan();
+    calendarResizeObserver?.disconnect();
+    const current = transient.zoom ? findNode(tree(), transient.zoom) : null;
+    if (transient.zoom && !current) transient.zoom = null;
+    app.innerHTML = `<div class="workbench">${renderSidebar()}<section class="host-main">${renderToolbar()}<div class="workspace-tree">${renderTree(current || tree())}</div></section></div>`;
+
+    bindDividers();
+    bindSidebarResize();
+    bindCalendarResize();
+  }
+
+  function bindCalendarResize() {
+    const bodies = [...app.querySelectorAll('.pane-calendar .pane-body')];
+    if (!bodies.length) return;
+    calendarResizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const body = entry.target;
+        if (!body.isConnected) continue;
+        const pane = body.closest('[data-pane-id]');
+        const id = pane?.dataset.paneId;
+        const node = findNode(tree(), id);
+        if (!node || node.kind !== 'calendar') continue;
+        const days = entry.contentRect.width >= 760 ? 7 : entry.contentRect.width >= 600 ? 5 : entry.contentRect.width >= 440 ? 3 : 1;
+        if (transient.calendarDaysByPane[id] === days) {
+          if (calendarPan?.root.parentElement === body &&
+              Math.abs(calendarPan.tracks[0].getBoundingClientRect().width - calendarPan.width) > 1) {
+            calendarDrag = null;
+            stopCalendarPan();
+          }
+          continue;
+        }
+        transient.calendarDaysByPane[id] = days;
+        refreshCalendar(body, node);
+      }
+    });
+    for (const body of bodies) calendarResizeObserver.observe(body);
+  }
+
+  function refreshCalendar(body, node) {
+    const old = body.querySelector('.calendar-native');
+    if (calendarDrag?.root === old) calendarDrag = null;
+    if (calendarPan?.root === old) stopCalendarPan();
+    const top = Number(old.dataset.firstHour) * 62 + old.querySelector('.time-scroll').scrollTop;
+    body.innerHTML = renderCalendar(node);
+    const calendar = body.firstElementChild;
+    calendar.querySelector('.time-scroll').scrollTop = top - Number(calendar.dataset.firstHour) * 62;
+  }
+
+  function stopCalendarPan() {
+    if (!calendarPan) return;
+    const { root, tracks, frame, timer } = calendarPan;
+    cancelAnimationFrame(frame);
+    clearTimeout(timer);
+    delete root.dataset.panning;
+    for (const track of tracks) {
+      track.style.removeProperty('transform');
+      track.querySelectorAll('[inert]').forEach(page => page.remove());
+    }
+    calendarPan = null;
+  }
+
+  function beginCalendarPan(root) {
+    if (calendarPan?.root === root) {
+      clearTimeout(calendarPan.timer);
+      if (calendarPan.frame) {
+        cancelAnimationFrame(calendarPan.frame);
+        calendarPan.frame = 0;
+        calendarPan.lastTime = performance.now();
+      }
+      return calendarPan;
+    }
+    stopCalendarPan();
+    const tracks = [...root.querySelectorAll('.calendar-track')];
+    const width = tracks[0].getBoundingClientRect().width;
+    if (width < 1) return null;
+    const days = Number(root.dataset.visibleDays);
+    for (const direction of [-1, 1]) {
+      const selected = shift(state.selectedDate, direction * days);
+      const page = calendarPage(visibleDates(selected, days), selected, Number(root.dataset.firstHour));
+      tracks.forEach((track, i) => {
+        const neighbor = document.createElement('div');
+        neighbor.className = 'calendar-page';
+        neighbor.inert = true;
+        neighbor.innerHTML = page[i];
+        if (direction < 0) { neighbor.dataset.before = ''; track.prepend(neighbor); }
+        else track.append(neighbor);
+      });
+    }
+    root.dataset.panning = '';
+    calendarPan = { root, tracks, width, days, x: 0, velocity: 0, lastTime: performance.now(), frame: 0, timer: 0 };
+    return calendarPan;
+  }
+
+  function paintCalendarPan(pan, x) {
+    pan.x = x;
+    for (const track of pan.tracks) track.style.transform = `translate3d(${x}px,0,0)`;
+  }
+
+  function moveCalendarPan(root, dx) {
+    const pan = beginCalendarPan(root);
+    if (!pan) return;
+    const now = performance.now();
+    // Only movement towards an edge meets resistance. Reversing is immediate.
+    const limit = pan.width * .75, band = pan.width - limit;
+    const outward = Math.sign(dx) === Math.sign(pan.x);
+    let x = pan.x + dx;
+    if (outward && Math.abs(pan.x) >= limit) {
+      const remaining = (pan.width - Math.abs(pan.x)) * Math.exp(-Math.abs(dx) / band);
+      x = Math.sign(dx) * (pan.width - remaining);
+    } else if (Math.abs(x) > limit && Math.sign(x) === Math.sign(dx)) {
+      x = Math.sign(dx) * (pan.width - band * Math.exp(-(Math.abs(x) - limit) / band));
+    }
+    const dt = Math.max(8, now - pan.lastTime);
+    pan.velocity = dt > 90 ? 0 : .5 * pan.velocity + .5 * (x - pan.x) / dt;
+    pan.lastTime = now;
+    paintCalendarPan(pan, x);
+  }
+
+  function settleCalendarPan(cancelled = false) {
+    const pan = calendarPan;
+    if (!pan) return;
+    clearTimeout(pan.timer);
+    const width = pan.width;
+    const velocity = pan.velocity * Math.exp(-(performance.now() - pan.lastTime) / 110);
+    const projected = pan.x + Math.max(-width / 3, Math.min(width / 3, velocity * 120));
+    const page = !cancelled && Math.abs(pan.x) > width * .08 && Math.abs(projected) > width * .35 ? Math.sign(projected) : 0;
+    const target = page * width;
+    const finish = () => {
+      stopCalendarPan();
+      if (!page) return;
+      state.selectedDate = shift(state.selectedDate, -page * pan.days);
+      save();
+      // Keep the current vertical time and any focused editor in another plugin.
+      for (const body of app.querySelectorAll('.pane-calendar .pane-body')) {
+        refreshCalendar(body, findNode(tree(), body.parentElement.dataset.paneId));
+      }
+    };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+    // Analytic critically damped spring, seeded with release velocity (px/ms).
+    const start = performance.now(), offset = pan.x - target, stiffness = .024;
+    const tick = now => {
+      const t = now - start;
+      const remainder = (offset + (velocity + stiffness * offset) * t) * Math.exp(-stiffness * t);
+      if ((Math.abs(remainder) < .3 && t > 64) || t > 440) { finish(); return; }
+      paintCalendarPan(pan, Math.max(-width, Math.min(width, target + remainder)));
+      pan.frame = requestAnimationFrame(tick);
+    };
+    pan.frame = requestAnimationFrame(tick);
+  }
+
+  // Trackpads and tilt wheels supply deltaX. Shift+wheel works with a vertical wheel.
+  app.addEventListener('wheel', event => {
+    const root = event.target.closest('.calendar-native');
+    if (!root || event.ctrlKey || event.metaKey || calendarDrag?.claimed) return;
+    const shifted = event.shiftKey && !event.deltaX;
+    const delta = shifted ? event.deltaY : event.deltaX;
+    if (!delta || (!shifted && Math.abs(delta) <= Math.abs(event.deltaY))) return;
+    event.preventDefault();
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? root.clientWidth : 1;
+    moveCalendarPan(root, -delta * unit);
+    if (calendarPan) calendarPan.timer = setTimeout(settleCalendarPan, 90);
+  }, { passive: false });
+
+  let calendarDrag = null;
+  app.addEventListener('pointerdown', event => {
+    const root = event.target.closest('.calendar-native');
+    if (!root || !event.isPrimary || event.button !== 0) return;
+    calendarDrag = { root, id: event.pointerId, x: event.clientX, y: event.clientY, claimed: false };
+    if (calendarPan?.root === root && calendarPan.frame) {
+      beginCalendarPan(root);
+      root.setPointerCapture(event.pointerId);
+      calendarDrag.claimed = true;
+    }
+  });
+  app.addEventListener('pointermove', event => {
+    const drag = calendarDrag;
+    if (!drag || drag.id !== event.pointerId) return;
+    const dx = event.clientX - drag.x;
+    if (!drag.claimed) {
+      const dy = event.clientY - drag.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
+      if (Math.abs(dx) <= Math.abs(dy)) { calendarDrag = null; return; }
+      drag.root.setPointerCapture(event.pointerId);
+      drag.claimed = true;
+    }
+    event.preventDefault();
+    drag.x = event.clientX;
+    moveCalendarPan(drag.root, dx);
+  });
+  function endCalendarDrag(event) {
+    if (calendarDrag?.id !== event.pointerId) return;
+    if (calendarDrag.claimed && calendarPan?.root === calendarDrag.root) {
+      settleCalendarPan(event.type === 'pointercancel');
+    }
+    calendarDrag = null;
+  }
+  window.addEventListener('pointerup', endCalendarDrag);
+  window.addEventListener('pointercancel', endCalendarDrag);
+
+  function splitPane(id, axis, kind = 'empty') {
+    const target = findNode(tree(), id);
+    if (!target || target.axis) return;
+    const pane = leaf(kind);
+    setTree(updateNode(tree(), id, node => branch(axis, node, pane, 0.5)));
+    transient.zoom = null;
+    render();
+    if (kind === 'empty') {
+      app.querySelector(`[data-pane-id="${pane.id}"] .empty-choices button`)?.focus();
+    } else {
+      notify(`已在${axis === 'x' ? '右侧' : '下方'}打开${pluginItems.find(item => item.kind === kind)?.label}`);
+    }
+  }
+  function choosePlugin(anchor, label, callback) {
+    openMenu(anchor, label, pluginItems.map(item => ({ label: item.label, icon: item.kind, action: () => callback(item.kind) })));
+  }
+  function toggleZoom(id) {
+    transient.zoom = transient.zoom === id ? null : id;
+    render();
+    app.querySelector(`[data-action="zoom"][data-id="${id}"]`)?.focus({ preventScroll: true });
+  }
+  function paneMenu(anchor, id) {
+    openMenu(anchor, '窗格操作', [
+      { label: '在右侧切分窗格', icon: 'splitX', action: () => splitPane(id, 'x') },
+      { label: '在下方切分窗格', icon: 'splitY', action: () => splitPane(id, 'y') },
+      { label: '替换当前插件…', icon: 'plugins', action: () => choosePlugin(anchor, '替换为', kind => { setTree(updateNode(tree(), id, node => ({ ...node, kind }))); render(); }) },
+      { separator: true },
+      { label: transient.zoom === id ? '还原窗格' : '最大化窗格', icon: transient.zoom === id ? 'restore' : 'maximize', action: () => toggleZoom(id) },
+      { label: '关闭窗格', icon: 'close', action: () => closePane(id) }
+    ]);
+  }
+  function closePane(id) {
+    const next = tree().id === id ? null : removeNode(tree(), id);
+    setTree(next || leaf('empty'));
+    transient.zoom = null;
+    render();
+    notify('窗格已关闭，插件数据保留');
+  }
+  function openPlugin(paneId, kind, beside = false) {
+    if (beside) return splitPane(paneId, 'x', kind);
+    setTree(updateNode(tree(), paneId, node => ({ ...node, kind })));
+    transient.zoom = null;
+    render();
+    notify(`已在原窗格打开${pluginItems.find(item => item.kind === kind)?.label}`);
+  }
+  function launcherMenu(anchor, source, id, paneId) {
+    const item = source === 'plugin' ? pluginItems.find(entry => entry.id === id) : state.pins.find(entry => entry.id === id);
+    if (!item) return;
+    const items = [{ label: '打开', icon: 'external', action: () => launch(source, id, paneId) }];
+    if (source === 'plugin') {
+      items.push({ label: '在旁边打开', icon: 'splitX', action: () => openPlugin(paneId, id, true) });
+      items.push({ label: '从快捷入口移除', icon: 'close', action: () => {
+        state.pluginPins = state.pluginPins.filter(entry => entry !== id);
+        save(); render(); notify('插件入口已移除，插件和数据未更改');
+      } });
+    } else items.push({ label: '从快捷入口移除', icon: 'close', action: () => { state.pins = state.pins.filter(entry => entry.id !== id); save(); render(); notify('入口已移除，原目标未更改'); } });
+    openMenu(anchor, item.label, items);
+  }
+  function launch(source, id, paneId) {
+    if (source === 'plugin') return openPlugin(paneId, id);
+    const pin = state.pins.find(item => item.id === id);
+    if (pin) notify(`已请求打开「${pin.label}」；HTML demo 不启动系统目标`);
+  }
+
+  function newWorkspace() {
+    const dialog = showDialog('新建工作区', `<form class="dialog-form" id="workspace-form"><label>名称<input name="name" required maxlength="80" placeholder="例如：写作"></label><p class="dialog-hint">新工作区从快捷入口开始，插件业务数据保持共享。</p><div class="form-actions"><button type="button" class="secondary-button" data-close-dialog>取消</button><button class="primary-button" type="submit">创建</button></div></form>`);
+    dialog.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('#workspace-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const name = new FormData(event.target).get('name').trim();
+      if (!name) return;
+      if (state.workspaces.some(item => item.name === name)) { notify('工作区名称已存在'); return; }
+      const id = uid('ws');
+      state.workspaces.push({ id, name });
+      state.layouts[`${id}:${concept}`] = leaf('launcher');
+      state.workspace = id;
+      save(); dialog.close(); render(); notify('工作区已创建');
+    });
+  }
+  function workspaceMenu(anchor) {
+    const switches = state.workspaces.filter(item => item.id !== state.workspace).map(item => ({
+      label: `切换到「${item.name}」`, icon: 'workspace', action: () => { state.workspace = item.id; transient.zoom = null; save(); render(); }
+    }));
+    openMenu(anchor, workspace().name, [
+      ...switches,
+      { label: '新建工作区', icon: 'plus', action: newWorkspace },
+      { label: '重命名工作区', icon: 'note', action: renameWorkspace },
+      { label: '复制工作区布局', icon: 'workspace', action: duplicateWorkspace },
+      { separator: true },
+      { label: '删除工作区', icon: 'close', danger: true, action: removeWorkspace },
+      { separator: true },
+      { label: '重置演示', icon: 'reset', action: () => confirmAction('重置演示？', '恢复示例工作区、日程、待办和快捷入口。', '重置演示', () => {
+        state = defaults(); transient.zoom = null; transient.newTaskPane = null; draftTitle = ''; save(); render(); notify('演示已重置');
+      }) }
+    ]);
+  }
+  function renameWorkspace() {
+    const dialog = showDialog('重命名工作区', `<form class="dialog-form" id="rename-form"><label>名称<input name="name" required maxlength="80" value="${esc(workspace().name)}"></label><div class="form-actions"><button type="button" class="secondary-button" data-close-dialog>取消</button><button class="primary-button" type="submit">保存</button></div></form>`);
+    dialog.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('#rename-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const name = new FormData(event.target).get('name').trim();
+      if (!name) return;
+      workspace().name = name; save(); dialog.close(); render();
+    });
+  }
+  function duplicateWorkspace() {
+    const id = uid('ws');
+    const copy = { id, name: `${workspace().name} 副本` };
+    state.workspaces.push(copy);
+    state.layouts[`${id}:${concept}`] = structuredClone(tree());
+    state.workspace = id;
+    save(); render(); notify('已复制布局，业务数据仍共享');
+  }
+  function removeWorkspace() {
+    if (state.workspaces.length === 1) { notify('至少保留一个工作区'); return; }
+    confirmAction('删除工作区？', `仅删除「${workspace().name}」的布局，插件数据和后台任务保留。`, '删除工作区', () => {
+      const removed = state.workspace;
+      state.workspaces = state.workspaces.filter(item => item.id !== removed);
+      for (const key of Object.keys(state.layouts)) if (key.startsWith(`${removed}:`)) delete state.layouts[key];
+      state.workspace = state.workspaces[0].id;
+      save(); render(); notify('工作区布局已删除，业务数据保留');
+    });
+  }
+  function showHostService(service) {
+    const content = {
+      plugins: ['插件管理', `<div class="dialog-form"><p class="dialog-hint">三个随包插件均通过公开服务接口运行。窗格布局与业务数据分开保存。</p>${pluginItems.map(item => `<div class="compact-event" style="--event:${item.color}"><i></i><span><strong>${item.label}</strong><small>已启用 · 本地插件</small></span></div>`).join('')}<div class="form-actions"><button class="primary-button" data-close-dialog>完成</button></div></div>`],
+      jobs: ['任务中心', `<div class="dialog-form"><p class="dialog-hint">当前没有后台任务。视图关闭不会取消正在运行的 Job；取消操作需要再次确认。</p><div class="form-actions"><button class="primary-button" data-close-dialog>完成</button></div></div>`],
+      settings: ['桌面设置', `<div class="dialog-form"><p class="dialog-hint">此 HTML 仅展示界面方案，不修改登录启动、菜单栏或系统快捷键。产品默认仍为关闭窗口不退出。</p><div class="form-actions"><button class="primary-button" data-close-dialog>完成</button></div></div>`]
+    }[service];
+    const dialog = showDialog(content[0], content[1]);
+    dialog.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => dialog.close()));
+  }
+  function addPin(anchor) {
+    const paneId = anchor.closest('[data-pane-id]').dataset.paneId;
+    const catalog = pluginItems.filter(item => item.kind !== 'launcher');
+    const dialog = showDialog('添加快捷入口', `
+      <form class="dialog-form pin-form">
+        <fieldset class="pin-types"><legend class="sr-only">入口类型</legend>
+          ${[['plugin','插件'],['app','应用'],['folder','文件夹']].map(([value,label]) =>
+            `<label><input type="radio" name="kind" value="${value}" ${value === 'plugin' ? 'checked' : ''}><span>${label}</span></label>`
+          ).join('')}
+        </fieldset>
+        <fieldset class="catalog"><legend>显示在快捷入口中的插件</legend>
+          ${catalog.map(item => `<label class="catalog-item" style="--tile-color:${item.color}">
+            <span class="tile-icon">${launcherIcon(item)}</span><strong>${esc(item.label)}</strong>
+            <input type="checkbox" name="plugin" value="${item.id}" ${state.pluginPins.includes(item.id) ? 'checked' : ''}>
+          </label>`).join('')}
+        </fieldset>
+        <div class="place-fields" hidden><label>入口名称<input name="label" maxlength="80" autocomplete="off"></label>
+          <p class="dialog-hint">演示版将名称保存到常用位置。</p></div>
+        <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog>取消</button><button class="primary-button" type="submit">完成</button></div>
+      </form>`, { onClose() {
+        app.querySelector(`[data-pane-id="${paneId}"] [data-action="add-pin"]`)?.focus({ preventScroll: true });
+      } });
+    const form = dialog.querySelector('form');
+    const name = form.elements.label;
+    const submit = form.querySelector('[type="submit"]');
+    form.addEventListener('change', event => {
+      if (event.target.name !== 'kind') return;
+      const kind = form.elements.kind.value;
+      const choosingPlugins = kind === 'plugin';
+      form.querySelector('.catalog').hidden = !choosingPlugins;
+      form.querySelector('.place-fields').hidden = choosingPlugins;
+      name.required = !choosingPlugins;
+      name.placeholder = kind === 'folder' ? '例如：项目资料' : '例如：备忘录';
+      submit.textContent = choosingPlugins ? '完成' : '添加入口';
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const kind = data.get('kind');
+      if (kind === 'plugin') {
+        state.pluginPins = data.getAll('plugin');
+      } else {
+        const label = name.value.trim();
+        if (!label) { name.value = ''; name.reportValidity(); return; }
+        state.pins.push({ id: uid('pin'), kind, label, detail: kind === 'folder' ? '文件夹' : '应用', color: kind === 'folder' ? '#0a84ff' : '#007aff' });
+      }
+      save();
+      dialog.close();
+      render();
+      notify(kind === 'plugin' ? '插件入口已保存' : '入口已添加');
+    });
+  }
+
+  function bindDividers() {
+    app.querySelectorAll('[data-divider-id]').forEach(handle => {
+      const node = findNode(tree(), handle.dataset.dividerId);
+      if (!node) return;
+      handle.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || !event.isPrimary) return;
+        event.preventDefault();
+        const box = handle.parentElement.getBoundingClientRect();
+        const bounds = handle.getBoundingClientRect();
+        const grabOffset = node.axis === 'x' ? event.clientX - bounds.left : event.clientY - bounds.top;
+        handle.setPointerCapture(event.pointerId);
+        handle.dataset.dragging = 'true';
+        const move = moveEvent => {
+          const ratio = node.axis === 'x' ? (moveEvent.clientX - box.left - grabOffset) / box.width : (moveEvent.clientY - box.top - grabOffset) / box.height;
+          node.ratio = Math.max(0.15, Math.min(0.85, ratio));
+          handle.parentElement.style.setProperty('--ratio', `${node.ratio * 100}%`);
+          handle.setAttribute('aria-valuenow', String(Math.round(node.ratio * 100)));
+        };
+        const end = () => {
+          handle.removeEventListener('pointermove', move);
+          handle.removeEventListener('pointerup', end);
+          handle.removeEventListener('pointercancel', end);
+          delete handle.dataset.dragging;
+          save();
+        };
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', end);
+        handle.addEventListener('pointercancel', end);
+      });
+      handle.addEventListener('dblclick', () => { node.ratio = 0.5; save(); render(); });
+      handle.addEventListener('keydown', event => {
+        const negative = node.axis === 'x' ? 'ArrowLeft' : 'ArrowUp';
+        const positive = node.axis === 'x' ? 'ArrowRight' : 'ArrowDown';
+        if (![negative, positive, 'Home', 'End', 'Enter'].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === 'Home') node.ratio = 0.15;
+        else if (event.key === 'End') node.ratio = 0.85;
+        else if (event.key === 'Enter') node.ratio = 0.5;
+        else node.ratio = Math.max(0.15, Math.min(0.85, node.ratio + (event.key === negative ? -0.03 : 0.03)));
+        save(); render();
+        app.querySelector(`[data-divider-id="${node.id}"]`)?.focus();
+      });
+    });
+  }
+  function bindSidebarResize() {
+    const handle = app.querySelector('.sidebar-resize');
+    const sidebar = app.querySelector('.host-sidebar');
+    if (!handle || !sidebar) return;
+    handle.addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      const startX = event.clientX;
+      const startWidth = sidebar.offsetWidth;
+      handle.setPointerCapture(event.pointerId);
+      handle.dataset.dragging = 'true';
+      const move = moveEvent => {
+        const width = Math.max(160, Math.min(300, startWidth + moveEvent.clientX - startX));
+        sidebar.style.width = `${width}px`;
+        handle.setAttribute('aria-valuenow', String(width));
+        state.sidebarWidth = width;
+      };
+      const end = () => {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', end);
+        handle.removeEventListener('pointercancel', end);
+        delete handle.dataset.dragging;
+        save();
+      };
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+    });
+    handle.addEventListener('keydown', event => {
+      if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+      event.preventDefault();
+      state.sidebarWidth = event.key === 'Home' ? 160 : event.key === 'End' ? 300 : Math.max(160, Math.min(300, state.sidebarWidth + (event.key === 'ArrowLeft' ? -8 : 8)));
+      save(); render(); app.querySelector('.sidebar-resize')?.focus();
+    });
+  }
+
+  app.addEventListener('click', event => {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+    const action = button.dataset.action;
+    const id = button.dataset.id;
+    if (action === 'select-date') { state.selectedDate = button.dataset.date; save(); render(); }
+    else if (action === 'calendar-prev' || action === 'calendar-next') {
+      const direction = action === 'calendar-prev' ? -1 : 1;
+      const paneId = button.closest('[data-pane-id]')?.dataset.paneId;
+      const amount = calendarDaysFor({ id: paneId });
+      state.selectedDate = shift(state.selectedDate, direction * amount);
+      save(); render();
+    }
+    else if (action === 'calendar-today') { state.selectedDate = TODAY; save(); render(); }
+    else if (action === 'new-event') openEvent();
+    else if (action === 'edit-event') {
+      openEvent(id);
+    }
+    else if (action === 'toggle-task') {
+      const task = state.tasks.find(item => item.id === id);
+      task.completed = !task.completed; save(); render();
+      app.querySelector(`[data-action="toggle-task"][data-id="${id}"]`)?.focus({ preventScroll: true });
+      notify(task.completed ? '已完成，可在“已完成”中恢复' : '已恢复为待完成');
+    }
+    else if (action === 'edit-task') {
+      openTask(id);
+    }
+    else if (action === 'todo-filter') { state.todoFilter = button.dataset.filter; transient.newTaskPane = null; save(); render(); }
+    else if (action === 'focus-new-task') {
+      const opening = transient.newTaskPane !== id;
+      transient.newTaskPane = opening ? id : null;
+      draftTitle = '';
+      if (opening && state.todoFilter === 'completed') state.todoFilter = 'open';
+      save(); render();
+      if (opening) {
+        const row = app.querySelector(`.todo-composer[data-pane-id="${id}"]`);
+        row.querySelector('input').focus();
+        if (event.detail && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          row.animate([{ opacity: 0.25 }, { opacity: 1 }], { duration: 140, easing: getComputedStyle(row).getPropertyValue('--ease-out').trim() });
+        }
+      }
+      else app.querySelector(`[data-action="focus-new-task"][data-id="${id}"]`)?.focus();
+    }
+    else if (action === 'cancel-new-task') {
+      const paneId = id;
+      transient.newTaskPane = null; render();
+      app.querySelector(`[data-action="focus-new-task"][data-id="${paneId}"]`)?.focus();
+    }
+    else if (action === 'task-menu') {
+      const task = state.tasks.find(item => item.id === id);
+      openMenu(button, task.title, [{ label: '编辑详情', icon: 'note', action: () => openTask(id) }, { label: task.completed ? '恢复待办' : '完成待办', icon: 'check', action: () => { task.completed = !task.completed; save(); render(); } }, { label: '删除待办', icon: 'close', danger: true, action: () => deleteTask(id) }]);
+    }
+    else if (action === 'launch') launch(button.dataset.source, id, button.closest('[data-pane-id]')?.dataset.paneId);
+    else if (action === 'add-pin') addPin(button);
+    else if (action === 'split-x' || action === 'split-y') splitPane(id, action === 'split-x' ? 'x' : 'y');
+    else if (action === 'pane-menu') paneMenu(button, id);
+    else if (action === 'close-pane') closePane(id);
+    else if (action === 'zoom') {
+      toggleZoom(id);
+    }
+    else if (action === 'replace-pane') { setTree(updateNode(tree(), id, node => ({ ...node, kind: button.dataset.kind }))); render(); }
+    else if (action === 'new-workspace') newWorkspace();
+    else if (action === 'switch-workspace') { state.workspace = id; transient.zoom = null; save(); render(); }
+    else if (action === 'workspace-menu') workspaceMenu(button);
+    else if (action === 'host-service') showHostService(button.dataset.service);
+  });
+
+  app.addEventListener('contextmenu', event => {
+    const tile = event.target.closest('[data-context="launcher"]');
+    if (!tile) return;
+    event.preventDefault();
+    launcherMenu(tile, tile.dataset.source, tile.dataset.id, tile.closest('[data-pane-id]')?.dataset.paneId);
+  });
+  app.addEventListener('change', event => {
+
+    if (event.target.matches('[data-calendar-filter]')) {
+      const name = event.target.dataset.calendarFilter;
+      state.hiddenCalendars = event.target.checked ? state.hiddenCalendars.filter(item => item !== name) : [...new Set([...state.hiddenCalendars, name])];
+      save(); render();
+    }
+  });
+  app.addEventListener('input', event => {
+    if (event.target.matches('.todo-composer input')) draftTitle = event.target.value;
+  });
+  app.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && event.target.closest('.todo-composer') && !event.isComposing) {
+      event.preventDefault();
+      const paneId = transient.newTaskPane;
+      transient.newTaskPane = null;
+      draftTitle = '';
+      render();
+      app.querySelector(`[data-action="focus-new-task"][data-id="${paneId}"]`)?.focus();
+      return;
+    }
+  });
+
+  document.addEventListener('submit', event => {
+    const form = event.target;
+    if (!form.dataset.form) return;
+    event.preventDefault();
+    const data = new FormData(form);
+    const type = form.dataset.form;
+    if (type === 'new-task') {
+      const title = data.get('title').trim();
+      if (!title) return;
+      draftTitle = '';
+      if (state.todoFilter === 'planned') state.todoFilter = 'open';
+      state.tasks.unshift({ id: uid('t'), title, list: '个人', due: state.todoFilter === 'today' ? TODAY : '', priority: 'none', completed: false, notes: '' });
+      save(); render();
+      app.querySelector(`[data-form="new-task"][data-pane-id="${form.dataset.paneId}"] input`)?.focus();
+      notify('待办已添加');
+    } else if (type === 'event' || type === 'event-inline') {
+      const id = form.dataset.id;
+      const existing = state.events.find(item => item.id === id);
+      const allDay = data.get('allDay') === 'true';
+      if (!data.get('title')?.trim()) { notify('请填写日程标题'); return; }
+      if (!allDay && data.get('end') <= data.get('start')) {
+        const error = form.querySelector('.form-error');
+        if (error) error.textContent = '结束时间需要晚于开始时间。';
+        else notify('结束时间需要晚于开始时间');
+        return;
+      }
+      const colors = { 工作: '#ff3b30', 设计: '#af52de', 个人: '#0a84ff' };
+      const calendarName = data.get('calendar') || existing?.calendar || '工作';
+      const next = {
+        id: existing?.id || uid('e'), title: data.get('title').trim(), date: data.get('date'),
+        allDay, calendar: calendarName, color: colors[calendarName],
+        location: data.get('location') !== null ? data.get('location').trim() : existing?.location || '',
+        notes: data.get('notes') !== null ? data.get('notes').trim() : existing?.notes || ''
+      };
+      if (!allDay) { next.start = data.get('start'); next.end = data.get('end'); }
+      if (existing) Object.assign(existing, next); else state.events.push(next);
+      state.selectedDate = next.date;
+
+      save(); closeDialog(); render(); notify('日程已保存');
+    } else if (type === 'task' || type === 'task-inline') {
+      const task = state.tasks.find(item => item.id === form.dataset.id);
+      if (!task) return;
+      if (data.get('title') !== null) {
+        const title = data.get('title').trim();
+        if (!title) { notify('请填写待办标题'); return; }
+        task.title = title;
+      }
+      task.due = data.get('due');
+      task.priority = data.get('priority');
+      task.notes = data.get('notes').trim();
+
+      save(); closeDialog(); render(); notify('待办详情已保存');
+    }
+  });
+
+  overlay.addEventListener('click', event => {
+    const deleteEventButton = event.target.closest('[data-delete-event]');
+    const deleteTaskButton = event.target.closest('[data-delete-task]');
+    if (deleteEventButton) { const id = deleteEventButton.dataset.deleteEvent; closeDialog(); deleteEvent(id); }
+    if (deleteTaskButton) { const id = deleteTaskButton.dataset.deleteTask; closeDialog(); deleteTask(id); }
+  });
+  document.addEventListener('pointerdown', event => {
+    document.body.dataset.input = 'pointer';
+    if (overlay.querySelector('.context-menu') && !event.target.closest('.context-menu') && !event.target.closest('[data-action="pane-menu"], [data-action="workspace-menu"], [data-action="split-x"], [data-action="split-y"]')) closeMenu();
+  });
+  document.addEventListener('keydown', event => {
+    document.body.dataset.input = 'keyboard';
+    const menu = overlay.querySelector('.context-menu');
+    if (event.key === 'Escape' && menu) { event.preventDefault(); closeMenu(true); return; }
+    if (menu && ['ArrowDown','ArrowUp','Home','End'].includes(event.key)) {
+      event.preventDefault();
+      const buttons = [...menu.querySelectorAll('button')];
+      const index = buttons.indexOf(document.activeElement);
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length;
+      buttons[next]?.focus();
+      return;
+    }
+  });
+  render();
+})();
+
+  </script>
+</body>
+</html>

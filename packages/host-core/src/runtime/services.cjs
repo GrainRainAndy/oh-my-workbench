@@ -9,7 +9,7 @@ function matches(type,value){
   for(const item of value)if(!matches('string',item))return false;
   return Buffer.byteLength(JSON.stringify(value))<=65536;
 }
-function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
+function createServices({plugins,fork,notify=()=>{},showNotification=()=>{},idleMs=60_000}){
   const generations=new Map();
   const failures=new Map();
   const failureWindowMs=10_000;
@@ -68,7 +68,7 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
       disposing.add(generation);
       disposeTimeout=setTimeout(()=>child.kill(),5000);
       child.postMessage({type:'dispose'});
-    },async invoke(message,signal,onProgress,fileDelegate){
+    },async invoke(message,signal,onProgress,fileDelegate,timeoutMs){
       await started;
       if(generations.get(provider)!==generation||disposing.has(generation))throw new NotDispatched('服务已停止');
       if(dispatched.size>=64)throw new NotDispatched('服务繁忙');
@@ -78,7 +78,7 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
       let timeout;
       try{
         return await new Promise((resolve,reject)=>{
-          timeout=setTimeout(()=>reject(Error('服务响应超时')),10000);
+          timeout=setTimeout(()=>reject(Error('服务响应超时')),timeoutMs);
           pending.set(id,{resolve,reject,signal,onProgress,fileDelegate});
           signal?.addEventListener('abort',requestCancel,{once:true});
           child.postMessage({...message,id,hasSelectedFile:Boolean(fileDelegate)});
@@ -89,6 +89,12 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
     }};
     generations.set(provider,generation);
     child.on('message',message=>{
+      if(message?.type==='notification'){
+        if(generations.get(provider)!==generation||disposing.has(generation))return;
+        const owner=plugins.list().find(plugin=>plugin.id===provider&&plugin.enabled&&plugin.available!==false&&plugin.notifications===true);
+        if(owner&&typeof message.body==='string'&&message.body.trim()&&message.body.length<=256)showNotification(owner.name,message.body,owner.id);
+        return;
+      }
       if(message?.ready){clearTimeout(timer);ready();return;}
       const request=pending.get(message?.id);
       if(message?.type==='read-selected-file'){
@@ -140,7 +146,7 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
     clearTimeout(idleTimer);
     inFlight++;
     try{await start(id).started;}finally{inFlight--;scheduleIdle();}
-  },async call(caller,{service,version,method,input},signal,onProgress,fileDelegate){
+  },async call(caller,{service,version,method,input},signal,onProgress,fileDelegate,timeoutMs=10000){
     const provider=resolveProvider(caller,{service,version,method,input});
     const spec=provider.services.find(s=>s.id===service&&s.version===version);
     const submittedInput=Array.isArray(input)?input.slice():input;
@@ -149,7 +155,7 @@ function createServices({plugins,fork,notify=()=>{},idleMs=60_000}){
     let result,generation;
     try{
       generation=start(provider.id);
-      result=await generation.invoke({service,method,input:submittedInput},signal,onProgress,fileDelegate);
+      result=await generation.invoke({service,method,input:submittedInput},signal,onProgress,fileDelegate,timeoutMs);
     }finally{inFlight--;scheduleIdle();}
     if(!matches(spec.methods[method].output,result))throw Error('服务结果无效');
     if(spec.methods[method].invalidates===true&&generations.get(provider.id)===generation)notify({service,version,provider:provider.id});

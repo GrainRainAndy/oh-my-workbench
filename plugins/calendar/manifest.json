@@ -1,0 +1,30 @@
+{
+  "id":"workbench.calendar","name":"日程","description":"管理本地日程。关闭窗口后，后台继续检查已设置的提醒。","notifications":true,"backgroundMode":"resident","activationEvents":["onAppStart"],
+  "databaseVersion":6,
+  "backupDatabase":"calendar.sqlite",
+  "views":[{"type":"agenda","title":"日程","icon":"calendar","configVersion":1,"stateVersion":1}],
+  "usesServices":[{"id":"workbench.calendar.events","version":"1.0.0"}],
+  "services":[{"id":"workbench.calendar.events","version":"1.0.0","methods":{
+    "configureReminder":{"input":"string[]","output":"string","invalidates":true},
+    "listCalendars":{"input":"string","output":"string[]"},
+    "createInCalendar":{"input":"string[]","output":"string","invalidates":true},
+    "createCalendar":{"input":"string[]","output":"string","invalidates":true},
+    "moveToCalendar":{"input":"string[]","output":"string","invalidates":true},
+    "listRange":{"input":"string[]","output":"string[]"},
+    "listDay":{"input":"string","output":"string[]"},
+    "deleteAllDay":{"input":"string[]","output":"string","invalidates":true},
+    "updateAllDay":{"input":"string[]","output":"string","invalidates":true},
+    "renameAllDay":{"input":"string[]","output":"string","invalidates":true},
+    "moveOccurrence":{"input":"string[]","output":"string","invalidates":true},
+    "cancelOccurrence":{"input":"string[]","output":"string","invalidates":true},
+    "deleteSeries":{"input":"string[]","output":"string","invalidates":true},
+    "updateSeries":{"input":"string[]","output":"string","invalidates":true},
+    "createSeries":{"input":"string[]","output":"string","invalidates":true},
+    "deleteTimed":{"input":"string[]","output":"string","invalidates":true},
+    "updateTimed":{"input":"string[]","output":"string","invalidates":true},
+    "updateTimedSeries":{"input":"string[]","output":"string","invalidates":true},
+    "createTimedSeries":{"input":"string[]","output":"string","invalidates":true},
+    "createTimed":{"input":"string[]","output":"string","invalidates":true},
+    "createAllDay":{"input":"string[]","output":"string","invalidates":true}
+  }}]
+}

@@ -22,6 +22,8 @@ async function verify(){
     await assert.rejects(()=>database.forPlugin('fixture.other').use(handle,digest),/凭据不可用/);
     const owner=database.forPlugin('fixture.owner');
     assert.equal(await owner.use(handle,digest),digest(sample));
+    await assert.rejects(owner.use(handle,async value=>{throw Error('adapter failed: '+value);}),
+      error=>error.message==='凭据使用失败' && !String(error.stack).includes(sample));
     const databases=['workspaces.sqlite','plugins.sqlite','jobs.sqlite'];
     for(const name of databases){
       const db=new DatabaseSync(join(profile,name));

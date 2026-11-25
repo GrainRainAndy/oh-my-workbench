@@ -32,8 +32,10 @@ contextBridge.exposeInMainWorld('viewServices',{
 });
 contextBridge.exposeInMainWorld('jobs',{
   list:()=>ipcRenderer.invoke('jobs:list'),
+  exportResult:id=>ipcRenderer.invoke('jobs:exportResult',id),
   cancel:id=>ipcRenderer.invoke('jobs:cancel',id),
   submit:request=>ipcRenderer.invoke('jobs:submit',request),
+  submitFile:request=>ipcRenderer.invoke('jobs:submitFile',request),
   watch:callback=>{
     const listener=()=>callback();
     ipcRenderer.on('jobs:changed',listener);
@@ -52,4 +54,10 @@ contextBridge.exposeInMainWorld('desktopPreferences',{
   setLogin:value=>ipcRenderer.invoke('desktop:login',value),
   setTray:value=>ipcRenderer.invoke('desktop:tray',value),
   setShortcut:value=>ipcRenderer.invoke('desktop:shortcut',value)
+});
+
+contextBridge.exposeInMainWorld('desktopLauncher',{
+  choose:request=>ipcRenderer.invoke('launcher:choose',request),
+  icon:request=>ipcRenderer.invoke('launcher:icon',request),
+  open:request=>ipcRenderer.invoke('launcher:open',request)
 });

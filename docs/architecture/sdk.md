@@ -114,7 +114,7 @@ T04 的宿主实现已有会话内只读文件授权。主进程按调用方持�
 
 可信内置插件可在清单中声明 databaseVersion（正整数，SQLite user_version 范围内）和 backupDatabase（本插件的单个 SQLite 文件名），并提供同目录 migrate.mjs。注册时验证声明与入口路径，不执行迁移代码。入口导出 migrate({dataDirectory})，接收升级副本中的插件目录。迁移入口的绝对路径仅供宿主使用。
 
-R12 的宿主内部凭据作用域按可信插件标识绑定。store 返回随机句柄，use 仅供宿主侧适配器消费，revoke 可撤销；读取和撤销均按插件标识与句柄联合匹配。凭据库独立于工作区和备份库，系统加密不可用时拒绝写入与读取。macOS 桌面适配器使用 Electron safeStorage 异步加解密，在交付前再次检查句柄是否已撤销。真实业务消费端仍待接入。
+R12 的宿主内部凭据作用域按可信插件标识绑定。store 返回随机句柄，use 仅供宿主侧适配器消费，revoke 可撤销；读取和撤销均按插件标识与句柄联合匹配。凭据库独立于工作区和备份库，系统加密不可用时拒绝写入与读取。macOS 桌面适配器使用 Electron safeStorage 异步加解密，在交付前再次检查句柄是否已撤销。消费回调抛错时，宿主仅向调用方返回“凭据使用失败”，避免原异常携带明文。真实业务消费端仍待接入。
 
 ## 在预览包中运行 SDK 示例
 
@@ -138,3 +138,90 @@ M0 后台模块可导出 activate({dataDirectory})，每个新后台进程在报
 停用插件时，宿主先更新可用性。对没有已派发请求的后台，宿主请求 dispose，等待异步清理及进程退出后完成开关操作；清理宽限为 5 秒。已派发请求仍沿用进程停止及结果对账路径。并发开关请求按到达顺序应用。
 
 后台 activate 可同步或异步返回清理函数，返回值须为函数或 undefined。正常释放时优先等待本次 activate 返回的函数；未返回函数时使用模块导出的 dispose。两种写法共同定义时只运行前者。
+
+日程插件服务 workbench.calendar.events 1.0.0 的 deleteAllDay 接受 [id, day, expectedTitle]，仅在日期与标题仍匹配时删除，成功返回 id 并通知订阅者刷新。
+
+updateAllDay 接受 [id, expectedDay, title, expectedTitle, nextDay]，在单条条件更新中保存新名称和日期，成功返回原 id。renameAllDay 继续支持原调用方。
+
+createSeries 接受 [id, startDay, title, ruleJSON]，返回系列 id。规则支持 frequency、interval、count 或 until。listDay 的系列行额外返回 start 和 rule；单次事件的修改和删除接口只作用于单次事件。
+
+updateSeries 接受 [id, nextStart, nextTitle, nextRuleJSON, expectedStart, expectedTitle, expectedRuleJSON]。expectedRuleJSON 为 listDay 返回规则的 JSON 序列化。原开始日期、名称和规则全部匹配时原子更新整组并通知订阅者，否则拒绝写入。
+
+deleteSeries 接受 [id, expectedStart, expectedTitle, expectedRuleJSON]，条件匹配后删除整组并通知订阅者；过期请求保留当前系列。
+
+cancelOccurrence 接受 [id, expectedStart, expectedTitle, expectedRuleJSON, originalDay]。按原日历日期取消单次出现，保留系列其余日期及次数上限。listDay 的 rule 可含 cancelled 日期列表；整组编辑保留已有取消项。
+
+moveOccurrence 接受 [id, expectedStart, expectedTitle, expectedRuleJSON, originalDay, targetDay]。单次记录始终以原定日期标识；listDay 的系列行返回 originalDay。移动到其他实例所在日期时两者分别返回。整组更新保留移动映射，单次取消接受原定日期。
+
+listRange 接受 [firstDay, lastDay]，首尾均包含，上限 42 天以覆盖六周月历。结果按实际出现日期排序，每行在 listDay 原有字段之外提供 day。改期进入区间的实例保留 originalDay。
+
+createTimed 接受 [id, startDay, title, startTime, endDay, endTime, timeZone]。按创建时区保存本地起止、绝对时刻和实际占用日期。listRange 在每个占用日期返回含 timing 的行；listDay 在查询日期返回相同事件。相同 id 和内容可安全重试。
+
+deleteTimed 接受 [id, expectedStartDay, expectedTitle, expectedTimingJSON]。从任何占用日期发起操作均传原始开始日期；标题或时间快照已变化时拒绝删除。
+
+updateTimed 接受 createTimed 的七个参数，末尾附 expectedTitle 和 expectedTimingJSON。标题和时间快照匹配时一次更新事件及占用日期，并保留创建时区。
+
+listDay 和 listRange 在每个日期内先返回全天事件，随后按定时事件的绝对开始时刻升序返回。相同开始时刻保留原有顺序。
+
+createTimedSeries 在 createTimed 的七项输入之后接受 ruleJSON。listRange 每个占用日期均返回该次实际 timing、系列开始日期 start、原定日期 originalDay 与 rule。单次定时修改和删除接口拒绝系列记录。
+
+定时系列行的 seriesTiming 保存系列模板。updateTimedSeries 接受 createTimedSeries 的八项输入，附原开始日、名称、序列化规则和模板。原子更新保留创建时区及已有改期、取消例外，并更新规则版本以拒绝过期操作。
+
+listCalendars("") 返回序列化的 id/name 列表；createCalendar([id,name]) 支持同键同内容重试。moveToCalendar([eventId,expectedCalendar,targetCalendar]) 校验旧归属后移动整条事件。listRange 的可选第三项为日历 id；省略时仍查询全部日历。未设置归属的旧记录属于 default。
+
+createInCalendar([calendarId,createMethod,...args]) 在同一 SQLite 事务内创建事件及归属。createMethod 仅允许四种事件创建方法；已有 id 仅在同日历、同内容时允许重试。窗格的 calendarId 独立持久化，缺省为 default。
+
+configureReminder([eventId,expected,next]) 为单次定时事件保存提醒设置；off 关闭，其余值为分钟字符串 0、5、10、30、60。匹配旧设置后提交并通知订阅者。listDay/listRange 返回该事件的 reminderMinutes（关闭为 null）。
+
+后台 activate 上下文提供 showNotification(body)。宿主只接受当前工作进程、启用且可用并声明 notifications: true 的插件，正文长度上限 256，系统通知标题来自宿主登记的插件名称。调用是投递请求，不确认用户实际收到。
+
+updateTimed 在同一事务内更新事件并检查已领取提醒。开始时刻改变且新提醒期限仍在未来时重新安排；仅改标题或结束时刻不会重新投递。
+
+已领取后，configureReminder 改为不同提前量且新期限在未来时重新安排；新期限已过或重复提交原提前量时保留领取记录。
+
+workbench.todo.items 1.0.0 为独立待办服务。create([id,title]) 同键同内容可重试，setCompleted([id,expected,next]) 以 0/1 字符串校验原完成状态，list(open 或 completed) 返回序列化事项。视图 filter 属于实例，事项保存在插件的 todo.sqlite。
+
+待办服务 rename([id,expectedTitle,expectedCompleted,nextTitle]) 和 remove([id,expectedTitle,expectedCompleted]) 仅在旧名称、完成状态同时匹配时写入，并通知订阅者刷新。
+
+待办 setDetails([id,expectedDetailRevision,notes,due,priority]) 一次保存详情并增加版本。due 为空或有效 YYYY-MM-DD，priority 为 none/low/medium/high；list 返回上述字段和 detailRevision。
+
+待办 list(today) 返回到期日期等于本机当天的未完成事项；list(planned) 返回全部设置日期的未完成事项，包括逾期项，按到期日期升序排列。同日期按创建顺序倒序。
+
+待办 lists("") 列举清单，createList([id,name]) 创建。listItems([listId,open|completed|today|planned]) 查询清单，createInList([id,title,listId]) 写入指定清单；moveItem([id,expectedList,targetList]) 只更改原事项归属并通知订阅者。旧事项和 create 创建的事项属于 inbox（收件箱）。
+
+待办 `createWithDetails([id,title,listId,notes,due,priority])` 在同一次写入中保存标题、清单与详情。到期日接受 ISO 日期或空字符串，优先级接受 `none`、`low`、`medium`、`high`。相同参数使用同一 ID 重试仍只保留一条记录。
+
+
+待办 list 与 listItems 返回的每条事项带有 listId，用作 moveItem 的原清单并发前置条件。
+
+待办数据库 v4 保存清单顺序，lists 按该顺序返回。swapLists([前一个清单 ID,后一个清单 ID]) 在同一事务内交换相邻两项，原顺序过期时拒绝。新清单追加到末尾。
+
+renameList([清单 ID, 原名称, 新名称]) 按原名称检查并发修改，保存去除首尾空白后的非空名称，并通知订阅视图。清单 ID、排序及事项归属保持稳定。
+
+removeList([清单 ID, 当前名称]) 用一条条件删除语句校验名称、空清单及非收件箱约束，成功后通知订阅者。含已完成事项的清单同样视作非空。
+
+待办 v5 保存清单归档标记。lists("") 返回活动清单，lists("archived") 返回已归档清单。setArchived([id,"1" 或 "0"]) 归档或恢复，收件箱受保护。list 和 listItems 筛掉归档事项，归档期间保持事项归属及完成状态。
+
+日程 configureReminder 同样接受定时系列 ID，提前量作用于整组。首次启用从设置时刻开始；关闭后重新启用从新设置时刻开始。日程数据库 v6 保留按系列 ID 与原始实例日期唯一的领取记录，改期后已领取实例不重发。
+
+任务中心可将已成功任务的字符串结果导出为 UTF-8 文本。桌面入口只接受任务 ID，主进程从任务日志读取结果，目标由原生保存对话框选定。取消选择不写文件。
+
+jobs.submitFile(type,key,input) 经原生选择框获得单文件授权，当前上限 1 MiB，取消返回 null。提交时读取并核对文件身份，内存中的字节可由已绑定处理器通过 readSelectedFile() 领取一次，关闭窗格不撤销已提交任务。同键重试同时核对普通输入及文件内容摘要。文件路径和文件字节不作为输入写入任务数据库。
+
+manifest.jobs[].timeoutMs 可指定正整数毫秒数（最大 2147483647）。缺省仍为 10000。宿主仅从已发现的任务声明读取该值，普通视图调用沿用 10 秒。派发后超时记为 unknown，保留同键去重。
+
+快捷入口视图可在清单声明 `desktopLauncher: 1`。宿主提供 `ViewProps.launcher`，可列出可用插件视图、在相邻窗格打开新实例、调用系统选择器添加应用或文件夹，再以本机引用打开。随包快捷入口通过 `workbench.launcher.library@1.0.0` 管理本机共享入口库。工作区布局保存视图实例。旧布局仍持有的入口引用在打开时导入，已移除的入口有持久记录。主进程按插件核对本机授权、文件类型和文件身份。跨机器导入后需要重新选择本地目标。
+
+视图清单的可选 `icon` 字段指定快捷入口图形。当前提供 calendar、checklist、palette、counter、chart，缺省或未知名称使用通用窗格图形。
+
+本机 App 可通过 `launcher.icon(id)` 读取 macOS 图标。主进程复用打开时的插件归属和文件身份检查，返回 PNG 数据 URL 或空值。图片仅在当前视图显示，工作区配置只保存引用、名称和类型。
+
+视图可在清单中声明 `starter: true`，将该视图作为欢迎页的起点。宿主仅展示已启用且可加载的贡献，使用清单的标题和描述。点击后以一次工作区保存创建初始布局和独立视图实例。
+
+视图内部的日期、清单或模式切换如可能卸载编辑区，可调用 `navigateView(proceed)`。宿主以 `view-navigation` 原因检查发起视图的控制器。只有就绪、明确放弃或保存成功后才执行回调；选择继续编辑会留在原处。其他窗格的草稿不参与此次确认。
+
+宿主和随包插件可从 packages/ui-kit/src/index.jsx 导入 ViewIcon。kind 接收视图清单的 icon 值，未知值显示通用窗格图形。图标使用 currentColor 并对辅助技术隐藏，由按钮提供名称。边界检查仅放行 UI Kit 公开入口。
+
+快捷入口调用 launcher.openView(pluginId, type) 时在当前窗格替换视图。显式传入第三个参数 `'beside'`时在旁边打开。两者复用工作区持久化与视图离开检查。
+
+快捷入口调用 `launcher.choose()` 时，macOS 使用同一面板选择应用或文件夹，返回值的 kind 表示所选类型。传入 app 或 folder 仍可限制选择类型。取消返回 null。

@@ -12,15 +12,17 @@ test('plugin imports may use own files, dependencies and SDK, but not host or si
     writeFileSync(join(root,'package.json'),JSON.stringify({dependencies:{react:'19'}}));
     const path=join(root,'plugins/a/view.ts');
     writeFileSync(path,`import type {ViewProps} from '../../packages/sdk/src/index.ts';
+      import {ViewIcon} from '../../packages/ui-kit/src/index.jsx';
       import './view.css'; import React from 'react';`);
     assert.deepEqual(inspectPlugins(root),[]);
     writeFileSync(path,`export {store} from '../b/private.ts';
       import('../../apps/desktop/main.cjs');
       require('../../packages/host-core/private');
+      import('../../packages/ui-kit/src/private.jsx');
       import('node:fs');
       import(variable);
       type Private=import('../b/store').Private;`);
-    assert.equal(inspectPlugins(root).length,5);
+    assert.equal(inspectPlugins(root).length,6);
   }finally{rmSync(root,{recursive:true});}
 });
 

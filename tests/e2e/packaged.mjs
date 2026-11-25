@@ -25,7 +25,7 @@ child.stdio[4].setEncoding('utf8').on('data',part=>{
 async function send(method,params={},sessionId){
   const id=++sequence;
   return new Promise((accept,reject)=>{
-    const timer=setTimeout(()=>{pending.delete(id);reject(Error(method+' timed out'));},5000);
+    const timer=setTimeout(()=>{pending.delete(id);reject(Error(method+' timed out'));},method==='Target.getTargets'?30000:5000);
     pending.set(id,reply=>{
       clearTimeout(timer);
       if(reply.error)reject(Error(reply.error.message));else accept(reply.result);

@@ -2,7 +2,7 @@ const {pathToFileURL}=require('node:url');
 (async()=>{
   const plugin=await import(pathToFileURL(process.argv[2]).href);
   if(typeof plugin.call!=='function'&&typeof plugin.activate!=='function')throw Error('Invalid backend');
-  const cleanup=await plugin.activate?.({dataDirectory:process.argv[3]});
+  const cleanup=await plugin.activate?.({dataDirectory:process.argv[3],showNotification(body){process.parentPort.postMessage({type:'notification',body});}});
   if(cleanup!==undefined&&typeof cleanup!=='function')throw Error('Invalid backend disposer');
   const dispose=cleanup??plugin.dispose;
   const active=new Map();

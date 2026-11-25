@@ -19,9 +19,13 @@ function openPlugins(root, database){
       if(manifest.backgroundMode!==undefined&&!['resident','on-demand'].includes(manifest.backgroundMode))throw Error('插件后台模式无效');
       if(manifest.activationEvents!==undefined&&(!Array.isArray(manifest.activationEvents)||manifest.activationEvents.some(event=>typeof event!=='string')))throw Error('插件激活事件无效');
       if(manifest.backgroundMode==='resident'&&(!manifest.description?.trim()||!manifest.activationEvents?.includes('onAppStart')))throw Error('常驻后台需要说明用途并声明启动事件');
+      for(const job of manifest.jobs??[]){
+        if(job.timeoutMs!==undefined&&(!Number.isSafeInteger(job.timeoutMs)||job.timeoutMs<1||job.timeoutMs>2147483647))throw Error('任务等待时长无效');
+      }
       const types=new Set();
       for(const view of manifest.views){
         if(typeof view.type!=='string'||!view.type||types.has(view.type)||typeof view.title!=='string'||!view.title)throw Error('插件视图无效');
+        if(view.starter!==undefined&&typeof view.starter!=='boolean')throw Error('起始视图声明无效');
         if(view.description!==undefined&&typeof view.description!=='string')throw Error('视图说明无效');
         for(const key of ['configVersion','stateVersion']){
           if(Object.hasOwn(view,key)&&(!Number.isSafeInteger(view[key])||view[key]<1))throw Error('插件视图版本无效');

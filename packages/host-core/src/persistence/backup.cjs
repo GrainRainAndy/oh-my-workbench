@@ -185,13 +185,14 @@ function prepareRestore(profile,id,upgrade){
     return {directory,discard(){
       if(!committed)rmSync(directory,{recursive:true,force:true});
     },commit(){
+      if(committed)return;
       if(!existsSync(directory))throw Error('恢复副本已释放');
       if(target)checkIntegrity(join(directory,target.relative),target.version);
       const pointer=join(profile,'.active-'+next);
       try{
         writeFileSync(pointer,JSON.stringify({id:next}),{flag:'wx',mode:0o600});
         // From here on, retain the complete copy even if activation is interrupted.
-        rmSync(marker);
+        rmSync(marker,{force:true});
         renameSync(pointer,join(profile,'active-store.json'));
         committed=true;
       }finally{rmSync(pointer,{force:true});}

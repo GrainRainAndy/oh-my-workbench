@@ -59,7 +59,7 @@ async function verify(){
     assert.equal(row.n,legacy?Number.MAX_SAFE_INTEGER:21);
   }finally{reopened.close();}
   await run("document.querySelector('.manage-link').click()");
-  const clickUpgrade="Array.from(document.querySelectorAll('.manager button')).find(b=>b.textContent==='检查数据升级')?.click()";
+  const clickUpgrade="document.getElementById('purpose-fixture.tally').closest('article').querySelector('.plugin-upgrade button').click()";
   const {dialog}=require('electron');
   const nativeCancel=legacy&&process.argv.includes('--native-cancel');
   const nativeUpgrade=legacy&&process.argv.includes('--native-upgrade');
@@ -96,7 +96,7 @@ async function verify(){
       await run(clickUpgrade);
       await waitForMessage('原数据已保留');
       assert.ok(await run(`(()=>{
-        const tools=document.querySelector('.plugin-upgrade'),row=tools.closest('article');
+        const tools=document.getElementById('purpose-fixture.tally').closest('article').querySelector('.plugin-upgrade'),row=tools.closest('article');
         const toggle=row.querySelector('[role=switch]').getBoundingClientRect();
         const info=row.querySelector('.plugin-info').getBoundingClientRect();
         return toggle.left>=info.right && toggle.right<=innerWidth && toggle.width>=42

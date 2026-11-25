@@ -62,6 +62,13 @@ test('verified restore activates all databases together and preserves the old ge
     assert.throws(()=>abandoned.commit(),/副本已释放/);
     const next=snapshots.prepareRestore(profile,backup.id);
     assert.equal(snapshots.activeDirectory(profile),profile);
+    // A directory occupying the pointer path makes the final atomic rename fail.
+    const pointer=join(profile,'active-store.json');
+    mkdirSync(pointer);
+    assert.throws(()=>next.commit());
+    rmSync(pointer,{recursive:true});
+    assert.equal(snapshots.activeDirectory(profile),profile);
+    next.commit();
     next.commit();
     next.discard();
     snapshots.discardInterruptedCopies(profile);

@@ -1,11 +1,11 @@
-const {app,BrowserWindow,ipcMain,utilityProcess,Tray,Menu,nativeImage,dialog,shell,globalShortcut,powerMonitor}=require('electron');
+const {app,Notification,BrowserWindow,ipcMain,utilityProcess,Tray,Menu,nativeImage,dialog,shell,globalShortcut,powerMonitor}=require('electron');
 const {join}=require('node:path');
 const {mkdirSync,existsSync}=require('node:fs');
 const {DatabaseSync}=require('node:sqlite');
 const {spawnSync}=require('node:child_process');
-const {open,rename,unlink}=require('node:fs/promises');
-const {randomUUID}=require('node:crypto');
-const {createReadScope}=require('../../packages/host-core/src/platform/selected-file.cjs');
+const {writeExport,exportJobResult}=require('./export.cjs');
+const {submitNotification}=require('../../packages/host-core/src/platform/notifications.cjs');
+const {createReadScope,readSelectedFile}=require('../../packages/host-core/src/platform/selected-file.cjs');
 const {pathToFileURL}=require('node:url');
 const {openRepository}=require('../../packages/host-core/src/workspace/repository.cjs');
 const page=join(__dirname,'dist/index.html');
@@ -25,7 +25,7 @@ function expose(channel, handler){
 function show(){
   services?.setWindowless(false);
   if(win){if(win.isMinimized())win.restore();win.show();win.focus();return;}
-  win=new BrowserWindow({width:1200,height:790,minWidth:660,minHeight:460,titleBarStyle:'hiddenInset',backgroundColor:'#e6e9ef',webPreferences:{preload:join(__dirname,'preload.cjs'),sandbox:true,contextIsolation:true,nodeIntegration:false}});
+  win=new BrowserWindow({width:1200,height:790,minWidth:660,minHeight:460,titleBarStyle:'hiddenInset',backgroundColor:'#f0f1f4',webPreferences:{preload:join(__dirname,'preload.cjs'),sandbox:true,contextIsolation:true,nodeIntegration:false}});
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   win.webContents.on('will-navigate',e=>e.preventDefault());
   const current=win;
@@ -65,7 +65,7 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
           pluginStore=openPlugins(pluginRoot,join(directory,'plugins.sqlite'));
           pluginStore.list();
           jobStore=openJobs(join(directory,'jobs.sqlite'),{
-            execute:(owner,definition,input,signal,onProgress)=>services.call(owner,{...definition,input},signal,onProgress),
+            execute:(owner,definition,input,signal,onProgress,file)=>services.call(owner,{...definition,input},signal,onProgress,file,definition.timeoutMs),
             changed:refreshJobViews
           });
           jobStore.list();
@@ -113,20 +113,11 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
         const text=exportLayout(workspace,includeConfig);
         const {canceled,filePath}=await dialog.showSaveDialog(win,{title:'导出布局',message:includeConfig?'包含窗格布局和视图配置。':'仅包含窗格布局和视图类型。',defaultPath:'工作区布局.json',filters:[{name:'工作台布局',extensions:['json']}]});
         if(canceled||!filePath)return false;
-        const temporary=filePath+'.'+randomUUID()+'.tmp';
-        let ownsTemporary=false;
-        try{
-          const file=await open(temporary,'wx',0o600);
-          ownsTemporary=true;
-          try{await file.writeFile(text);await file.sync();}finally{await file.close();}
-          await rename(temporary,filePath);
-          ownsTemporary=false;
-        }catch(error){
+        try{await writeExport(filePath,text);}
+        catch(error){
           if(error.code==='ENOSPC')throw Error('磁盘空间不足，布局未导出。请释放空间后重试。');
           if(error.code==='EACCES'||error.code==='EPERM')throw Error('无法写入此位置，请选择其他文件夹。');
           throw Error('布局未导出，请检查目标位置后重试。');
-        }finally{
-          if(ownsTemporary)await unlink(temporary).catch(()=>console.warn('无法清理布局导出临时文件'));
         }
         return true;
       });
@@ -144,7 +135,20 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
         }finally{scope.close();}
         return repository.save(importLayout(bytes.toString('utf8')));
       });
-      services=createServices({plugins:{list:()=>safeMode?[]:plugins.list()},notify:notice=>{
+      const notificationIssues=new Map();
+      services=createServices({showNotification(title,body,id){
+        submitNotification(Notification,title,body,outcome=>{
+          const plugin=plugins.list().find(item=>item.id===id&&item.available);
+          if(!plugin||safeMode)return;
+          if(outcome==='shown'){
+            if(notificationIssues.delete(id))notifyPluginIssues();
+          }else{
+            notificationIssues.set(id,{folder:plugin.folder,reason:outcome==='unsupported'
+              ?title+'无法使用系统通知。':title+'的通知投递失败。请检查系统通知设置。'});
+            notifyPluginIssues();
+          }
+        });
+      },plugins:{list:()=>safeMode?[]:plugins.list()},notify:notice=>{
         if(win&&!win.webContents.isDestroyed())win.webContents.send('services:invalidated',notice);
       },fork:id=>{
         requirePluginExecution();
@@ -159,7 +163,8 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
       }
       function clearStartupIssue(id){
         startupAttempts.delete(id);
-        if(startupIssues.delete(id))notifyPluginIssues();
+        const clearedNotice=notificationIssues.delete(id);
+        if(startupIssues.delete(id)||clearedNotice)notifyPluginIssues();
       }
       function activateStartupPlugins(previouslyAvailable=new Set()){
         if(safeMode)return;
@@ -176,7 +181,7 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
           }
         }
       }
-      expose('plugins:issues',()=>[...plugins.issues(),...startupIssues.values()]);
+      expose('plugins:issues',()=>[...plugins.issues(),...startupIssues.values(),...notificationIssues.values()]);
       expose('plugins:safeMode',()=>safeMode);
       expose('plugins:reloadWindow',()=>win.reload());
       expose('plugins:list',()=>plugins.list());
@@ -203,6 +208,51 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
         if(!workspace||!Object.hasOwn(workspace.views,request.viewId))throw Error('视图不可用');
         return workspace.views[request.viewId].pluginId;
       }
+      function launcherOwner(request){
+        requirePluginExecution();
+        const owner=ownerOf(request);
+        if(!plugins.list().some(p=>p.id===owner&&p.available&&p.desktopLauncher===1))throw Error('快捷入口不可用');
+        return owner;
+      }
+      async function inspectTarget(path,kind){
+        const stat=await require('node:fs/promises').lstat(path,{bigint:true});
+        if(!stat.isDirectory()||(kind==='app')!==path.toLowerCase().endsWith('.app'))throw Error('所选项目类型不匹配');
+        return stat;
+      }
+      expose('launcher:choose',async request=>{
+        const owner=launcherOwner(request),requested=request.kind;
+        if(requested!==undefined&&requested!=='app'&&requested!=='folder')throw Error('入口类型无效');
+        const options=requested===undefined?{title:'添加应用或文件夹',properties:['openFile','openDirectory'],filters:[{name:'应用或文件夹',extensions:['app']}]}:
+          requested==='folder'?{title:'选择文件夹',properties:['openDirectory']}:
+          {title:'选择应用',defaultPath:'/Applications',properties:['openFile'],filters:[{name:'macOS 应用',extensions:['app']}]};
+        const {canceled,filePaths}=await dialog.showOpenDialog(win,options);
+        if(canceled)return null;
+        const path=filePaths[0];
+        const kind=requested??(path.toLowerCase().endsWith('.app')?'app':'folder');
+        const stat=await inspectTarget(path,kind);
+        launcherOwner(request);
+        const id=desktopPreferences.rememberTarget(owner,path,kind,stat);
+        return {id,kind,label:require('node:path').basename(path,kind==='app'?'.app':'')};
+      });
+      async function resolveLauncherTarget(request){
+        const owner=launcherOwner(request);
+        const target=desktopPreferences.target(owner,request.id);
+        if(!target)throw Error('请重新添加入口');
+        const stat=await inspectTarget(target.path,target.kind);
+        if(String(stat.dev)!==target.device||String(stat.ino)!==target.inode)throw Error('目标已更换');
+        launcherOwner(request);
+        return target;
+      }
+      expose('launcher:icon',async request=>{
+        const target=await resolveLauncherTarget(request);
+        if(target.kind!=='app')return null;
+        const image=await app.getFileIcon(target.path,{size:'normal'});
+        return image.isEmpty()?null:image.toDataURL();
+      });
+      expose('launcher:open',async request=>{
+        const target=await resolveLauncherTarget(request);
+        if(await shell.openPath(target.path))throw Error('系统无法打开此入口');
+      });
       expose('services:call',request=>{requirePluginExecution();return services.call(ownerOf(request),request);});
       expose('services:selectFile',async request=>{
         requirePluginExecution();
@@ -250,7 +300,7 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
           candidate.discard();
           throw error;
         }
-        startupAttempts.clear();startupIssues.clear();
+        startupAttempts.clear();startupIssues.clear();notificationIssues.clear();
         services.close();
         for(const store of [repository,plugins,jobs])store.close();
         [repository,plugins,jobs]=next;
@@ -288,7 +338,7 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
           candidate?.discard();
           return {failed:true,backupId:backup.id};
         }
-        startupAttempts.clear();startupIssues.clear();
+        startupAttempts.clear();startupIssues.clear();notificationIssues.clear();
         services.close();
         for(const store of [repository,plugins,jobs])store.close();
         [repository,plugins,jobs]=next;
@@ -302,15 +352,37 @@ function startDesktop(pluginRoot=join(__dirname,'../../plugins')){
         verifySnapshot(folder);
         shell.showItemInFolder(folder);
       });
+      expose('jobs:exportResult',id=>exportJobResult(jobs,id,()=>dialog.showSaveDialog(win,{
+        title:'导出任务结果',defaultPath:'任务结果.txt',filters:[{name:'文本',extensions:['txt']}]
+      })));
       expose('jobs:cancel',id=>jobs.cancel(id));
       expose('jobs:list',()=>jobs.list());
-      expose('jobs:submit',request=>{
+      function resolveJob(request){
         requirePluginExecution();
         const owner=ownerOf(request);
         const manifest=plugins.list().find(p=>p.id===owner&&p.available);
         const job=manifest?.jobs?.find(job=>job.type===request.type);
         if(!job)throw Error('任务类型不可用');
+        return {owner,job};
+      }
+      expose('jobs:submit',request=>{
+        const {owner,job}=resolveJob(request);
         return jobs.submit(owner,job,request.key,request.input);
+      });
+      expose('jobs:submitFile',async request=>{
+        const {owner,job}=resolveJob(request),broker=services,store=jobs;
+        const provider=broker.resolveProvider(owner,{...job,input:request.input});
+        const {canceled,filePaths}=await dialog.showOpenDialog(win,{title:'为后台任务选择文件',message:`允许 ${provider.name}（${provider.id}）为本次任务读取一个文件，最大 1 MiB。`,properties:['openFile']});
+        if(canceled||!filePaths.length)return null;
+        let bytes;
+        try{bytes=await readSelectedFile(filePaths[0],1024*1024);}
+        catch(error){
+          if(error.code==='EFBIG')throw Error('所选文件超过大小限制');
+          throw Error('无法读取所选文件，请重新选择');
+        }
+        const current=resolveJob(request);
+        if(store!==jobs||broker!==services||owner!==current.owner||broker.resolveProvider(owner,{...current.job,input:request.input}).id!==provider.id)throw Error('任务或处理器已变化');
+        return store.submit(owner,current.job,request.key,request.input,bytes);
       });
       const icon=nativeImage.createFromPath(join(__dirname,'assets/WorkbenchTemplate.png'));
       icon.setTemplateImage(true);

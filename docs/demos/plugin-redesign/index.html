@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>原生插件 UI 方案 · OhMyWorkbench</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body class="index-page">
+  <main class="index-shell">
+    <header class="index-intro">
+      <p class="eyebrow">OhMyWorkbench · 可交互设计稿</p>
+      <h1>工作台与原生插件的四种方向</h1>
+      <p><a href="workbench.html" style="color:#1265bc;text-decoration:underline;text-underline-offset:3px">打开最新组合稿</a>，体验自适应时间网格、行内新建待办和可自定义的快捷入口。</p>
+      <p>四个版本共享同一组日程、待办和快捷入口，也都保留递归分屏。差异在于信息排列、编辑方式和操作重心，而不只是配色。建议使用 1280 × 800 或更大的窗口比较。</p>
+    </header>
+
+    <section class="concept-grid" aria-label="设计方案">
+      <article class="concept-card">
+        <a href="native.html" aria-label="打开方案 A：原生分栏">
+          <div class="concept-preview"><div class="preview-window preview-native"><i class="preview-sidebar"></i><div class="preview-calendar"></div><div class="preview-stack"><i class="preview-todos"></i><i class="preview-launcher"></i></div></div></div>
+          <div class="concept-copy"><span class="concept-letter">方案 A</span><h2>原生分栏</h2><p>最接近 macOS Calendar 与 Reminders。周日程时间网格配待办、入口上下分栏，编辑使用居中的轻量表单。学习成本最低，适合作为稳妥基线。</p><span class="concept-link">打开交互样稿 <span aria-hidden="true">→</span></span></div>
+        </a>
+      </article>
+
+      <article class="concept-card">
+        <a href="today.html" aria-label="打开方案 B：今日议程">
+          <div class="concept-preview"><div class="preview-window preview-today"><i class="preview-sidebar"></i><div class="preview-calendar"></div><div class="preview-stack"><i class="preview-todos"></i><i class="preview-launcher"></i></div></div></div>
+          <div class="concept-copy"><span class="concept-letter">方案 B</span><h2>今日议程</h2><p>把一周日期压缩成选择条，以时间顺序阅读当天安排。日程和待办都在原位置展开编辑，减少窗口切换；更从容，但同一时间展示的日程较少。</p><span class="concept-link">打开交互样稿 <span aria-hidden="true">→</span></span></div>
+        </a>
+      </article>
+
+      <article class="concept-card">
+        <a href="planner.html" aria-label="打开方案 C：月历主从">
+          <div class="concept-preview"><div class="preview-window preview-planner"><i class="preview-sidebar"></i><div class="preview-calendar"></div><i class="preview-todos"></i><i class="preview-launcher"></i></div></div>
+          <div class="concept-copy"><span class="concept-letter">方案 C</span><h2>月历主从</h2><p>左侧月历负责定位日期，下方显示选中日，待办和入口各占一列。适合先做月度计划再处理当天内容；窄窗口下三列会更紧凑。</p><span class="concept-link">打开交互样稿 <span aria-hidden="true">→</span></span></div>
+        </a>
+      </article>
+
+      <article class="concept-card">
+        <a href="compact.html" aria-label="打开方案 D：紧凑搜索">
+          <div class="concept-preview"><div class="preview-window preview-compact"><i class="preview-launcher"></i><div class="preview-calendar"></div><i class="preview-todos"></i></div></div>
+          <div class="concept-copy"><span class="concept-letter">方案 D</span><h2>紧凑搜索</h2><p>快捷入口变成顶部搜索栏，日程和待办使用紧凑列表。按 / 聚焦搜索，方向键选择，回车原位打开。操作路径最短，但时间安排不如网格直观。</p><span class="concept-link">打开交互样稿 <span aria-hidden="true">→</span></span></div>
+        </a>
+      </article>
+    </section>
+
+    <section class="comparison-notes" aria-label="比较建议">
+      <div><h3>先比较操作模型</h3><p>分别点击同一项日程和待办，体验 A/C 的弹出编辑与 B/D 的行内编辑。后者保留上下文，前者能容纳更完整的字段。</p></div>
+      <div><h3>再检查分屏</h3><p>拖动窗格分隔线，或用方向键调整。窗格右上角支持切分、替换、最大化和关闭；关闭窗格不会删除演示业务数据。</p></div>
+      <div><h3>状态可以带过去</h3><p>四版通过浏览器本地存储共享修改。切换页面后继续比较；点顶部“重置演示”可还原。系统应用与文件夹不会真的启动。</p></div>
+    </section>
+  </main>
+</body>
+</html>

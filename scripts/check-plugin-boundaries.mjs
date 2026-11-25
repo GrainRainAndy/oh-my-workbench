@@ -25,7 +25,7 @@ function* files(directory,plugin,root,errors){
 export function inspectPlugins(root=project){
   root=realpathSync(root);
   const errors=[];
-  const sdk=join(root,'packages/sdk/src/index.ts');
+  const publicEntries=new Set([join(root,'packages/sdk/src/index.ts'),join(root,'packages/ui-kit/src/index.jsx')]);
   const pkg=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
   const dependencies=new Set(Object.keys(pkg.dependencies??{}));
   for(const entry of readdirSync(join(root,'plugins'),{withFileTypes:true})){
@@ -44,7 +44,7 @@ export function inspectPlugins(root=project){
         if(name.startsWith('.')||isAbsolute(name)){
           const target=resolve(dirname(file),name);
           const actual=existsSync(target)?realpathSync(target):target;
-          if(inside(plugin,actual)||actual===sdk)return;
+          if(inside(plugin,actual)||publicEntries.has(actual))return;
         }else if(isBuiltin(name)||dependencies.has(name.split('/').slice(0,name.startsWith('@')?2:1).join('/')))return;
         report('跨越插件依赖边界 '+name);
       }

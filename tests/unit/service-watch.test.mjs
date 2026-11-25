@@ -92,3 +92,44 @@ test('service array contracts reject holes in both directions and dispatch the v
     await assert.rejects(call([]),/服务结果无效/);
   }finally{broker.close();}
 });
+
+test('notifications require a live enabled provider with declared capability',async()=>{
+  const {createServices}=await import('../../packages/host-core/src/runtime/services.cjs');
+  const owner={id:'example',name:'示例',enabled:true};
+  const worker=new EventEmitter();
+  worker.kill=()=>{};
+  const sent=[];
+  const runtime=createServices({plugins:{list:()=>[owner]},fork:()=>worker,showNotification:(...args)=>sent.push(args)});
+  const ready=runtime.activate(owner.id);
+  worker.emit('message',{ready:true});
+  await ready;
+  const send=(body)=>worker.emit('message',{type:'notification',body});
+  send('未声明');
+  owner.notifications=true;
+  send('提醒');
+  send('a'.repeat(257));
+  owner.enabled=false;
+  send('已停用');
+  owner.enabled=true;
+  runtime.close();
+  send('已退出');
+  assert.deepEqual(sent,[['示例','提醒','example']]);
+});
+
+test('notification submission contains native failures and reports only observed outcomes',async()=>{
+  const {submitNotification}=await import('../../packages/host-core/src/platform/notifications.cjs');
+  let mode='unsupported';
+  class Notice extends EventEmitter{
+    static isSupported(){return mode!=='unsupported';}
+    show(){
+      if(mode==='throws')throw Error('native error');
+      if(mode==='silent')return;
+      this.emit(mode);
+    }
+  }
+  const outcomes=[];
+  for(mode of ['unsupported','throws','failed','silent','show']){
+    submitNotification(Notice,'日程','提醒',value=>outcomes.push(value));
+  }
+  assert.deepEqual(outcomes,['unsupported','failed','failed','shown']);
+});

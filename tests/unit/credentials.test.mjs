@@ -33,3 +33,27 @@ test('encrypted credentials survive restart, isolate owners and fail closed when
   available=true;
   await assert.rejects(()=>owner.use(handle,()=>assert.fail()),/凭据不可用/);
 });
+
+test('revocation during decryption prevents delivery to the consumer',async t=>{
+  const started=Promise.withResolvers();
+  const release=Promise.withResolvers();
+  const store=credentials.openCredentials(':memory:',{
+    isEncryptionAvailable:()=>true,
+    encryptString:value=>Buffer.from(value),
+    decryptString:async bytes=>{
+      started.resolve();
+      await release.promise;
+      return bytes.toString();
+    }
+  });
+  t.after(()=>store.close());
+  const owner=store.forPlugin('fixture.a');
+  const handle=await owner.store('synthetic-test-value');
+  let delivered=false;
+  const pending=owner.use(handle,()=>{delivered=true;});
+  await started.promise;
+  assert.equal(owner.revoke(handle),true);
+  release.resolve();
+  await assert.rejects(pending,/凭据不可用/);
+  assert.equal(delivered,false);
+});

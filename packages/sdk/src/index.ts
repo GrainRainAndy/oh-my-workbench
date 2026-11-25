@@ -16,6 +16,14 @@ export interface JobReceipt {
 /** Public capabilities passed by the host to each mounted React view. */
 export interface ViewProps<Config extends object, State extends object = Record<string, unknown>> {
   readonly viewType: string;
+  readonly launcher?: {
+    views: ReadonlyArray<{ pluginId: string; type: string; title: string; icon?: string }>;
+    openView(pluginId: string, type: string, placement?: 'beside'): void;
+    choose(kind?: 'app' | 'folder'): Promise<{id: string; kind: 'app' | 'folder'; label: string} | null>;
+    icon(id: string): Promise<string | null>;
+    open(id: string): Promise<void>;
+  };
+  navigateView(proceed: () => void): void;
   registerController(controller: ViewController): () => void;
   config: Readonly<Config>;
   updateConfig(config: Config): Promise<void>;
@@ -27,6 +35,7 @@ export interface ViewProps<Config extends object, State extends object = Record<
     call(id: string, version: string, method: string, input: string | string[]): Promise<string | string[]>;
   };
   jobs: {
+    submitFile(type: string, key: string, input: string[]): Promise<JobReceipt | null>;
     submit(type: string, key: string, input: string[]): Promise<JobReceipt>;
   };
 }
@@ -50,7 +59,7 @@ export type BackendHandler = (
 ) => ServiceValue | Promise<ServiceValue>;
 
 export interface ViewController {
-  prepareClose(reason: 'window-close' | 'workspace-switch' | 'pane-close' | 'replace-view' | 'layout-change' | 'delete-workspace'): {status:'ready'} | {status:'blocked';message:string} | {status:'dirty';message:string;canSave:boolean};
+  prepareClose(reason: 'view-navigation' | 'window-close' | 'workspace-switch' | 'pane-close' | 'replace-view' | 'layout-change' | 'delete-workspace'): {status:'ready'} | {status:'blocked';message:string} | {status:'dirty';message:string;canSave:boolean};
   saveDraft(): Promise<void>;
   discardDraft(): void | Promise<void>;
 }

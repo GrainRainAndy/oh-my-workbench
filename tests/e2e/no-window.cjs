@@ -1,3 +1,4 @@
+const {setTimeout:delay}=require("node:timers/promises");
 const assert=require('node:assert/strict');
 const {once}=require('node:events');
 const {createServer}=require('node:http');
@@ -17,7 +18,8 @@ ipcMain.handle=(channel,listener)=>register(channel,channel==='jobs:cancel'?asyn
 }:listener);
 
 async function verify(){
-  const profile=join(process.env.WORKBENCH_E2E_TEMP_DIR,'no-window');
+  const fileMode=process.argv.includes('--file-job');
+  const profile=join(process.env.WORKBENCH_E2E_TEMP_DIR,fileMode?'no-window-file':'no-window');
   mkdirSync(profile);
   app.setPath('userData',profile);
   const root=join(profile,'plugins');
@@ -38,6 +40,7 @@ async function verify(){
   const css=JSON.parse(readFileSync(join(root,'fixture-css','manifest.json'),'utf8'));
   writeFileSync(join(alternative,'manifest.json'),JSON.stringify({...css,id:'fixture.alternative',name:'备用提供者'}));
   writeFileSync(join(alternative,'backend.mjs'),'export function call(){return "incorrect provider";}');
+  if(fileMode)manifest.jobs[0].timeoutMs=30000;
   manifest.jobs.push({...manifest.jobs[0],type:'cancel-test',cancellable:true});
   writeFileSync(manifestPath,JSON.stringify(manifest));
   let accepted=0;
@@ -56,7 +59,9 @@ async function verify(){
       }
       if(input[0]==='#123456')context.reportProgress(25);
       if(input[0]==='#fedcba')context.reportProgress(65);
-      return (await fetch(${JSON.stringify(endpoint)})).text();
+      const response=await (await fetch(${JSON.stringify(endpoint)})).text();
+      if(context.readSelectedFile)return Buffer.from(await context.readSelectedFile()).toString('hex');
+      return response;
     }`);
   function nextWindow(){
     return new Promise(resolve=>app.once('browser-window-created',(_,win)=>{
@@ -69,12 +74,22 @@ async function verify(){
   const run=code=>win.webContents.executeJavaScript(code);
   server.on('request',()=>accepted++);
   assert.deepEqual(await run("window.plugins.issues()"),[{folder:'damaged',reason:'插件清单或入口无效'}]);
+  await run(`window.workspaces.save({schemaVersion:1,id:'test',revision:0,name:'无窗任务',activePaneId:'p',
+    layout:{type:'leaf',paneId:'p',viewInstanceId:'v'},views:{v:{id:'v',pluginId:'fixture.palette',viewType:'palette',configVersion:1,stateVersion:1,config:{},state:{}}}})`);
+  const submission=`window.jobs.${fileMode?'submitFile':'submit'}({workspaceId:'test',viewId:'v',type:'export-css',key:'once',input:['#123456']})`;
+  if(fileMode){
+    const selected=join(profile,'sample.bin');
+    dialog.showOpenDialog=async()=>({canceled:true,filePaths:[]});
+    assert.equal(await run(submission),null);
+    writeFileSync(selected,Buffer.alloc(1024*1024+1));
+    dialog.showOpenDialog=async()=>({canceled:false,filePaths:[selected]});
+    await assert.rejects(run(submission),/超过大小限制/);
+    assert.deepEqual(await run('window.jobs.list()'),[]);
+    assert.equal(accepted,0);
+    writeFileSync(selected,Buffer.from([0,128,255]));
+  }
   const request=once(server,'request');
-  const job=await run(`(async()=>{
-    await window.workspaces.save({schemaVersion:1,id:'test',revision:0,name:'无窗任务',activePaneId:'p',
-      layout:{type:'leaf',paneId:'p',viewInstanceId:'v'},views:{v:{id:'v',pluginId:'fixture.palette',viewType:'palette',configVersion:1,stateVersion:1,config:{},state:{}}}});
-    return window.jobs.submit({workspaceId:'test',viewId:'v',type:'export-css',key:'once',input:['#123456']});
-  })()`);
+  const job=await run(submission);
   const [,response]=await request;
   assert.equal(job.status,'running');
   const closed=once(win,'closed');win.close();await closed;
@@ -91,11 +106,20 @@ async function verify(){
   if(!nativeSleep&&!simulateSleep)powerMonitor.emit('resume');
   assert.equal(read.get(job.id).status,'running');
   assert.equal(readProgress.get(job.id).percent,25);
+  if(fileMode)await delay(11000);
   response.end('completed-without-window');
   const deadline=Date.now()+4000;
   while(read.get(job.id).status==='running'&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,30));
   assert.equal(read.get(job.id).status,'succeeded');
   assert.equal(BrowserWindow.getAllWindows().length,0);
+  if(fileMode){
+    const stored=db.prepare('SELECT input,result FROM jobs WHERE id=?').get(job.id);
+    assert.equal(stored.result,'0080ff');
+    assert.equal(stored.input,JSON.stringify(['#123456']));
+    db.close();server.close();
+    console.log('Selected bytes read by utility process after last window closed.');
+    return;
+  }
   if(nativeSleep||simulateSleep){
     const cycle=new Promise(resolve=>powerMonitor.once('suspend',()=>{
       const suspendedAt=new Date().toISOString();
@@ -140,6 +164,14 @@ async function verify(){
     return [card.querySelector('time').dateTime,card.querySelector('details[open] pre').textContent];
   })()`);
   assert.deepEqual(visible,[new Date(records[0].updatedAt).toISOString(),'completed-without-window']);
+  const exported=join(profile,'任务结果.txt');
+  const saveDialog=dialog.showSaveDialog;
+  dialog.showSaveDialog=async()=>({canceled:false,filePath:exported});
+  try{
+    await second.webContents.executeJavaScript("document.querySelector('.export-job-result').click()");
+    for(let i=0;i<100&&!await second.webContents.executeJavaScript("document.querySelector('.job-card details [role=status]')?.textContent==='已导出'");i++)await delay(30);
+    assert.equal(readFileSync(exported,'utf8'),'completed-without-window');
+  }finally{dialog.showSaveDialog=saveDialog;}
   await second.webContents.executeJavaScript("document.querySelector('nav button').click()");
   for(let i=0;i<100&&!await second.webContents.executeJavaScript("!!document.querySelector('.palette select')");i++)await new Promise(resolve=>setTimeout(resolve,30));
   const started=once(server,'request');

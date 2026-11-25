@@ -3,7 +3,7 @@
   "views": [
     {
       "type": "palette",
-      "title": "配色板",
+      "title": "配色板","icon":"palette",
       "configVersion": 1,
       "stateVersion": 1
     }

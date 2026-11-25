@@ -1,0 +1,46 @@
+{
+  "id": "workbench.launcher",
+  "name": "快捷入口",
+  "description": "打开插件、常用应用和文件夹。",
+  "desktopLauncher": 1,
+  "views": [
+    {
+      "type": "launcher",
+      "title": "快捷入口",
+      "icon": "launcher",
+      "starter": true,
+      "configVersion": 1,
+      "stateVersion": 1
+    }
+  ],
+  "databaseVersion": 1,
+  "backupDatabase": "launcher.sqlite",
+  "usesServices": [
+    {
+      "id": "workbench.launcher.library",
+      "version": "1.0.0"
+    }
+  ],
+  "services": [
+    {
+      "id": "workbench.launcher.library",
+      "version": "1.0.0",
+      "methods": {
+        "read": {
+          "input": "string",
+          "output": "string"
+        },
+        "importLegacy": {
+          "input": "string",
+          "output": "string",
+          "invalidates": true
+        },
+        "change": {
+          "input": "string",
+          "output": "string",
+          "invalidates": true
+        }
+      }
+    }
+  ]
+}

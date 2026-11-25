@@ -30,7 +30,8 @@ function openCredentials(file,encryption){
         if(!row)throw Error('凭据不可用');
         const value=await encrypted(()=>encryption.decryptString(Buffer.from(row.ciphertext)));
         if(!lookup.get(owner,handle))throw Error('凭据不可用');
-        return consume(value);
+        try{return await consume(value);}
+        catch{throw Error('凭据使用失败');}
       },
       revoke(handle){return remove.run(owner,handle).changes===1;}
     };

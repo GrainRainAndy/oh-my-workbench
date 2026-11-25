@@ -21,6 +21,29 @@ async function verify(){
     const [,win]=await created;
     await once(win.webContents,'did-finish-load');
     const run=expression=>win.webContents.executeJavaScript(expression);
+    if(process.argv.includes('--plugin-colors')){
+      const colorsFile=join(directory,'验收配色.txt');
+      await writeFile(colorsFile,'#123456 #abcdef');
+      workspace.layout.viewInstanceId='v';
+      workspace.views.v={id:'v',pluginId:'fixture.palette',viewType:'palette',configVersion:1,stateVersion:1,config:{},state:{}};
+      await run('window.workspaces.save('+JSON.stringify(workspace)+')');
+      const loaded=once(win.webContents,'did-finish-load');
+      win.reload();await loaded;
+      const choose="Array.from(document.querySelectorAll('.palette button')).find(b=>b.textContent==='从文件生成 CSS')";
+      for(let i=0;i<100&&!await run('Boolean('+choose+')');i++)await delay(50);
+      await run(choose+'.click()');
+      console.log('Select file:',colorsFile);
+      for(let i=0;i<120;i++){
+        const output=await run("document.querySelector('.css-result')?.textContent");
+        if(output){
+          assert.match(output,/--color-1: #123456/);
+          assert.match(output,/--color-2: #abcdef/);
+          return;
+        }
+        await delay(1000);
+      }
+      throw Error('Timed out waiting for colors from the native file picker');
+    }
     const button="Array.from(document.querySelectorAll('.welcome button')).find(b=>b.textContent==='导入布局')";
     for(let attempt=0;attempt<100&&!await run('Boolean('+button+')');attempt++)await delay(50);
     await run(button+'.click()');

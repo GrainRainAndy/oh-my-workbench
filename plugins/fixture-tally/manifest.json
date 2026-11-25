@@ -5,8 +5,8 @@
   "name": "计数器",
   "description": "跨工作区记录累计次数。",
   "views": [
-    {"type":"counter","title":"计数器","configVersion":1,"stateVersion":1},
-    {"type":"counter-summary","title":"计数概览","description":"只读显示共享累计次数。","configVersion":1,"stateVersion":1}
+    {"type":"counter","title":"计数器","icon":"counter","configVersion":1,"stateVersion":1},
+    {"type":"counter-summary","title":"计数概览","icon":"chart","description":"只读显示共享累计次数。","configVersion":1,"stateVersion":1}
   ],
   "usesServices": [{"id":"workbench.tally","version":"1.0.0"}],
   "services": [{

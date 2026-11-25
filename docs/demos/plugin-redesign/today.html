@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>方案 B · 今日议程 · OhMyWorkbench</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body data-concept="today">
+  <nav class="demo-switcher" aria-label="UI 设计方案">
+    <a class="demo-home" href="index.html">OhMyWorkbench <span>UI 方案</span></a>
+    <div class="demo-tabs">
+      <a href="native.html"><b>A</b>原生分栏</a>
+      <a href="today.html" aria-current="page"><b>B</b>今日议程</a>
+      <a href="planner.html"><b>C</b>月历主从</a>
+      <a href="compact.html"><b>D</b>紧凑搜索</a>
+    </div>
+    <button class="demo-reset" type="button" data-reset>重置演示</button>
+  </nav>
+  <main id="app"></main>
+  <div id="overlay-root"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="demo.js"></script>
+</body>
+</html>

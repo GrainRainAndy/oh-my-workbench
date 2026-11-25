@@ -17,14 +17,15 @@ async function verify(){
   try{
     await writeFile(backend,`export async function call(service,method,input,context){
       if(!context.readSelectedFile)return 'no grant';
-      return Buffer.from(await context.readSelectedFile()).toString('hex');
+      const bytes=await context.readSelectedFile();
+      return (bytes instanceof Uint8Array)+':'+Object.prototype.toString.call(bytes)+':'+Buffer.from(bytes).toString('hex');
     }`);
     const file=join(dir,'input');
     await writeFile(file,Buffer.from([0,128,255]));
     const token=await scope.grant(file);
     const delegate=scope.delegate(token);
     const request={service:'read',version:'1',method:'inspect',input:''};
-    assert.equal(await broker.call('reader',request,undefined,undefined,delegate),'0080ff');
+    assert.equal(await broker.call('reader',request,undefined,undefined,delegate),'true:[object Uint8Array]:0080ff');
     assert.equal(await broker.call('reader',{...request,hasSelectedFile:true}),'no grant');
     scope.revoke(token);
     await assert.rejects(broker.call('reader',request,undefined,undefined,delegate),/服务调用失败/);

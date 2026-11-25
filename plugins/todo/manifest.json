@@ -1,0 +1,24 @@
+{
+  "id":"workbench.todo","name":"待办","description":"记录本地事项，查看待完成和已完成的待办。",
+  "databaseVersion":5,"backupDatabase":"todo.sqlite",
+  "views":[{"type":"items","title":"待办","icon":"checklist","configVersion":1,"stateVersion":1}],
+  "usesServices":[{"id":"workbench.todo.items","version":"1.0.0"}],
+  "services":[{"id":"workbench.todo.items","version":"1.0.0","methods":{
+    "list":{"input":"string","output":"string[]"},
+    "lists":{"input":"string","output":"string[]"},
+    "setArchived":{"input":"string[]","output":"string","invalidates":true},
+    "removeList":{"input":"string[]","output":"string","invalidates":true},
+    "renameList":{"input":"string[]","output":"string","invalidates":true},
+    "swapLists":{"input":"string[]","output":"string","invalidates":true},
+    "createList":{"input":"string[]","output":"string","invalidates":true},
+    "listItems":{"input":"string[]","output":"string[]"},
+    "createWithDetails":{"input":"string[]","output":"string","invalidates":true},
+    "createInList":{"input":"string[]","output":"string","invalidates":true},
+    "moveItem":{"input":"string[]","output":"string","invalidates":true},
+    "create":{"input":"string[]","output":"string","invalidates":true},
+    "setDetails":{"input":"string[]","output":"string","invalidates":true},
+    "rename":{"input":"string[]","output":"string","invalidates":true},
+    "remove":{"input":"string[]","output":"string","invalidates":true},
+    "setCompleted":{"input":"string[]","output":"string","invalidates":true}
+  }}]
+}

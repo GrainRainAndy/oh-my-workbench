@@ -172,7 +172,7 @@ app.once('browser-window-created',(_event,win)=>{
         assert.equal(fs.existsSync(join(dataDir,'active-store.json')),false);
         assert.ok(await run("(async()=>(await window.workspaces.list()).some(w=>w.name==='仅在备份之后创建'))()"));
         const restored=new Promise(resolve=>win.webContents.once('did-finish-load',resolve));
-        assert.match(await run("document.querySelector('.restore-confirm li').textContent"),/计数器.*恢复数据库/);
+        assert.match(await run("Array.from(document.querySelectorAll('.restore-confirm li'),el=>el.textContent).join(' ')"),/计数器.*恢复数据库/);
         await run("document.querySelector('.restore-confirm .danger').click()");
         await restored;
         await until("document.querySelector('h1')?.textContent==='我的工作台'");
@@ -254,15 +254,15 @@ app.once('browser-window-created',(_event,win)=>{
       release.resolve();
       await until("document.querySelector('.pane')");
       await until("document.querySelector('.plugin:enabled')");
-      assert.deepEqual(await run("Array.from(document.querySelectorAll('.view-choice strong'),el=>el.textContent)"),['配色板','计数器','计数概览']);
-      assert.match(await run("document.querySelector('.view-choice small').textContent"),/浏览配色方案/);
+      assert.deepEqual(await run("Array.from(document.querySelectorAll('.view-choice strong'),el=>el.textContent)"),['日程','配色板','计数器','计数概览','快捷入口','待办']);
+      assert.match(await run("Array.from(document.querySelectorAll('.view-choice')).find(b=>b.textContent.includes('配色板')).querySelector('small').textContent"),/浏览配色方案/);
       const pendingModule=Promise.withResolvers();
       const requests=win.webContents.session.webRequest;
       requests.onBeforeRequest({urls:['file://*/*']},(details,done)=>{
         if(/\/assets\/view-[^/]+\.js$/.test(details.url))pendingModule.resolve(done);
         else done({});
       });
-      await run("document.querySelector('.plugin').click()");
+      await run("Array.from(document.querySelectorAll('.view-choice')).find(b=>b.textContent.includes('配色板')).click()");
       await until("document.querySelector('.pane-loading[role=status]')");
       assert.ok(await run(`(()=>{
         const hint=document.querySelector('.pane-loading');
@@ -283,7 +283,7 @@ app.once('browser-window-created',(_event,win)=>{
       assert.equal(await run("document.querySelector('.split-action span').getBoundingClientRect().width>0"),true);
       await run("document.querySelector('[aria-label=左右切分]').click()");
       await until("document.querySelector('.plugin:enabled')");
-      await run("document.querySelector('.plugin').click()");
+      await run("Array.from(document.querySelectorAll('.view-choice')).find(b=>b.textContent.includes('配色板')).click()");
       await until("document.querySelectorAll('.swatches').length===2");
       assert.equal(await run("Array.from(document.querySelectorAll('.split-action span')).every(label=>label.getBoundingClientRect().width===0)"),true);
       for(const pane of [0,1]){
@@ -308,7 +308,7 @@ app.once('browser-window-created',(_event,win)=>{
       await until("(async()=>{const [w]=await window.workspaces.list();return w.views[w.layout.first.viewInstanceId].config.name==='暮色海岸'&&w.views[w.layout.second.viewInstanceId].config.name==='砖红花园'})()");
       await run("{const second=document.querySelectorAll('.pane select')[1];second.selectedIndex=0;second.dispatchEvent(new Event('change',{bubbles:true}));}");
       await until("(async()=>{const [w]=await window.workspaces.list();return w.views[w.layout.second.viewInstanceId].config.name==='山间晨雾'})()");
-      await run("document.querySelector('[role=separator]').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}))");
+      await run("document.querySelector('.split > [role=separator]').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}))");
       await until("(async()=>(await window.workspaces.list())[0].layout.ratio===0.55)()");
       assert.equal(await run("document.querySelector('.divider').getAttribute('aria-valuetext')"),'左侧 55%，右侧 45%');
       win.focus();
@@ -318,7 +318,7 @@ app.once('browser-window-created',(_event,win)=>{
       await until("(async()=>(await window.workspaces.list())[0].layout.ratio===0.5)()");
       await until("document.querySelector('.divider').getAttribute('aria-valuenow')==='50'");
       assert.equal(await run("document.activeElement.matches('.divider')"),true);
-      await run("document.querySelector('[role=separator]').dispatchEvent(new KeyboardEvent('keydown',{key:'End',bubbles:true}))");
+      await run("document.querySelector('.split > [role=separator]').dispatchEvent(new KeyboardEvent('keydown',{key:'End',bubbles:true}))");
       await until("(async()=>(await window.workspaces.list())[0].layout.ratio===0.92)()");
       await until("document.querySelector('.divider').getAttribute('aria-valuenow')==='92'");
       const attemptsAtLimit=saveAttempts;
@@ -329,7 +329,7 @@ app.once('browser-window-created',(_event,win)=>{
       })()`);
       assert.equal(saveAttempts,attemptsAtLimit);
       assert.equal(await run("Math.abs(document.querySelector('.divider').getBoundingClientRect().left-document.querySelector('.pane').getBoundingClientRect().right)<1"),true);
-      await run("document.querySelector('[role=separator]').dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))");
+      await run("document.querySelector('.split > [role=separator]').dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))");
       await until("(async()=>(await window.workspaces.list())[0].layout.ratio===0.5)()");
       await run("document.querySelectorAll('.swatches')[0].querySelectorAll('button')[2].click()");
       await until("(async()=>{const [w]=await window.workspaces.list();return w.views[w.layout.first.viewInstanceId].state.selectedIndex===2 && Object.keys(w.views[w.layout.second.viewInstanceId].state).length===0})()");
@@ -499,7 +499,7 @@ app.once('browser-window-created',(_event,win)=>{
       const beforeReplace=await run("(async()=>(await window.workspaces.list()).find(w=>w.name.endsWith('副本')))()");
       await run("document.querySelector('[aria-label=窗格操作]').click()");
       await until("document.querySelector('.option-row')");
-      await run("document.querySelector('.option-row').click()");
+      await run("Array.from(document.querySelectorAll('.option-row')).find(b=>b.textContent==='配色板').click()");
       await until("document.querySelectorAll('.pane select').length===2 && document.querySelector('.pane select').value==='山间晨雾'");
       const afterReplace=await run("(async()=>(await window.workspaces.list()).find(w=>w.name.endsWith('副本')))()");
       assert.equal(afterReplace.layout.first.paneId,beforeReplace.layout.first.paneId);
@@ -519,7 +519,7 @@ app.once('browser-window-created',(_event,win)=>{
         else{
           await run("document.querySelector('[aria-label=窗格操作]').click()");
           await until("document.querySelector('.option-row')");
-          await run("document.querySelector('.option-row').click()");
+          await run("Array.from(document.querySelectorAll('.option-row')).find(b=>b.textContent==='配色板').click()");
         }
         await until("document.querySelector('.draft-dialog[open]')");
         await run("document.querySelector('.draft-dialog button').click()");

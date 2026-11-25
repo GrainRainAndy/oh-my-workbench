@@ -1,4 +1,5 @@
 import React,{useState,useEffect,useRef} from 'react';
+import {ActionMenu,menuPosition} from '../../../packages/ui-kit/src/index.jsx';
 import DesktopSettings from './DesktopSettings.jsx';
 export default function PluginManager({returnButton,plugins,safeMode,busy,toggle,pluginChange}){
   const [operation,setOperation]=useState(null);
@@ -53,14 +54,8 @@ export default function PluginManager({returnButton,plugins,safeMode,busy,toggle
     }
     finally{setOperation(null);}
   }
-  return <section className="manager"><div className="heading"><div><small>工作台设置</small><h1>插件管理</h1></div>{returnButton}</div>
-    <div className="manager-list">{plugins.map(plugin=><article key={plugin.id}>
-      <div className="plugin-symbol" aria-hidden="true">▦</div><div className="plugin-info"><h2>{plugin.name}</h2><p id={'purpose-'+plugin.id}>{plugin.description}</p>
-        {plugin.backgroundMode==='resident'&&<p className="background-policy" id={'background-'+plugin.id}><strong>常驻后台</strong>启用后随工作台启动，关闭窗口后仍可运行。</p>}
-        {pluginChange?.id===plugin.id&&<p id={'change-'+plugin.id} role="status">{pluginChange.enabled?'正在启用':'正在停用'}「{plugin.name}」…</p>}
-        {plugin.dependencyIssue&&<p className="dependency-issue" id={'dependency-'+plugin.id}><strong>已启用，暂不可用</strong><br/>{plugin.dependencyIssue}</p>}</div>
-      <button className="toggle" role="switch" aria-label={plugin.name} aria-describedby={[pluginChange?.id===plugin.id&&'change-'+plugin.id,plugin.description&&'purpose-'+plugin.id,plugin.backgroundMode==='resident'&&'background-'+plugin.id,safeMode&&'safe-mode-explanation',plugin.dependencyIssue&&'dependency-'+plugin.id].filter(Boolean).join(' ')||undefined} aria-checked={plugin.enabled} disabled={busy} onClick={()=>toggle(plugin.id,!plugin.enabled)}><i/></button>
-      {plugin.databaseVersion&&plugin.available&&!safeMode&&<div className="plugin-upgrade"><button disabled={busy||copying} onClick={async()=>{
+  const [menu,setMenu]=useState(null);
+  async function upgrade(plugin){
         setOperation('upgrade');setUpgradeNotice(null);
         try{
           const result=await window.plugins.upgrade(plugin.id);
@@ -71,11 +66,27 @@ export default function PluginManager({returnButton,plugins,safeMode,busy,toggle
         }
         catch{setUpgradeNotice({id:plugin.id,message:'升级未完成，请检查运行中的任务、可用空间及备份记录。'});}
         finally{setOperation(null);}
-      }}>检查数据升级</button>{upgradeNotice?.id===plugin.id&&<div><p role="status">{upgradeNotice.message}</p>{upgradeNotice.backupId&&<button onClick={()=>window.backups.reveal(upgradeNotice.backupId).catch(()=>setError('无法定位升级前备份。'))}>在访达中显示升级前备份</button>}</div>}</div>}
+  }
+  function pluginMenu(e,plugin){
+    if(busy||copying)return;
+    const actions=[[plugin.enabled?'停用插件':'启用插件',()=>toggle(plugin.id,!plugin.enabled)]];
+    if(plugin.databaseVersion&&plugin.available&&!safeMode)actions.push(['检查数据升级',()=>upgrade(plugin)]);
+    setMenu({position:menuPosition(e),label:plugin.name,actions});
+  }
+  return <section className="manager"><div className="heading"><div><h1>插件管理</h1></div>{returnButton}</div>
+    <div className="manager-list">{plugins.map(plugin=><article key={plugin.id} onContextMenu={e=>pluginMenu(e,plugin)}>
+      <div className="plugin-symbol" aria-hidden="true">▦</div><div className="plugin-info"><h2>{plugin.name}</h2><p id={'purpose-'+plugin.id}>{plugin.description}</p>
+        {plugin.backgroundMode==='resident'&&<p className="background-policy" id={'background-'+plugin.id}><strong>常驻后台</strong></p>}
+        {pluginChange?.id===plugin.id&&<p id={'change-'+plugin.id} role="status">{pluginChange.enabled?'正在启用':'正在停用'}「{plugin.name}」…</p>}
+        {plugin.dependencyIssue&&<p className="dependency-issue" id={'dependency-'+plugin.id}><strong>已启用，暂不可用</strong><br/>{plugin.dependencyIssue}</p>}</div>
+      <button className="toggle" role="switch" aria-label={plugin.name} aria-describedby={[pluginChange?.id===plugin.id&&'change-'+plugin.id,plugin.description&&'purpose-'+plugin.id,plugin.backgroundMode==='resident'&&'background-'+plugin.id,safeMode&&'safe-mode-explanation',plugin.dependencyIssue&&'dependency-'+plugin.id].filter(Boolean).join(' ')||undefined} aria-checked={plugin.enabled} disabled={busy} onClick={()=>toggle(plugin.id,!plugin.enabled)}><i/></button>
+      <button title="插件操作" aria-label={plugin.name+'的操作'} aria-haspopup="menu" disabled={busy||copying} onClick={e=>pluginMenu(e,plugin)}>···</button>
+      {upgradeNotice?.id===plugin.id&&<div><p role="status">{upgradeNotice.message}</p>{upgradeNotice.backupId&&<button onClick={()=>window.backups.reveal(upgradeNotice.backupId).catch(()=>setError('无法定位升级前备份。'))}>在访达中显示升级前备份</button>}</div>}
     </article>)}</div>
     {issues.length>0&&<section className="manager-issues"><h2>插件诊断</h2>{issues.map(issue=><p key={issue.folder}>{issue.folder} · {issue.reason}</p>)}</section>}
+    {menu&&<ActionMenu {...menu} close={()=>setMenu(null)}/>}
     <DesktopSettings/>
-    <section className="backup-card"><div><h2>工作台备份</h2><p>保存工作区、插件设置、任务记录及插件声明的数据库。</p></div>
+    <section className="backup-card"><div><h2>工作台备份</h2></div>
       <button disabled={copying} onClick={backup}>{operation==='backup'?'正在备份…':'创建本机备份'}</button>
       {last&&<div className="backup-receipt" role="status">已备份 · {new Date(last.createdAt).toLocaleTimeString('zh-CN')}
         <button onClick={()=>window.backups.reveal(last.id).catch(()=>setError('无法定位已验证的备份。'))}>在访达中显示</button></div>}

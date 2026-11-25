@@ -56,6 +56,8 @@ async function verify(){
     return prefix.scrollWidth>prefix.clientWidth && suffix.getBoundingClientRect().right<=button.getBoundingClientRect().right
       && label.textContent===button.getAttribute('aria-label') && label.title.endsWith(suffix.textContent);
   })()`));
+  win.focus();
+  win.webContents.focus();
   await run("document.querySelector('.skip-navigation').focus()");
   assert.ok(await run("document.activeElement.getBoundingClientRect().left>=0"));
   win.webContents.sendInputEvent({type:'keyDown',keyCode:'Return'});

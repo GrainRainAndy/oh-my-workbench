@@ -104,3 +104,21 @@ test('dispatch uses the validated input snapshot recorded under the submission k
     assert.throws(()=>store.submit('a',job,'stable',input),/标识冲突/);
   }finally{store.close();}
 });
+
+test('file job retry matches content and distinguishes a regular submission',async()=>{
+  let executions=0;
+  const store=registry.openJobs(':memory:',{execute:async(_owner,_job,_input,_signal,_progress,file)=>{
+    executions++;
+    return (await file.read()).toString('hex');
+  }});
+  try{
+    const submit=bytes=>store.submit('a',job,'same',[],bytes);
+    const first=submit(Buffer.from([1,2]));
+    assert.equal(submit(Buffer.from([1,2])).id,first.id);
+    assert.throws(()=>submit(Buffer.from([1,3])),/冲突/);
+    assert.throws(()=>submit(undefined),/冲突/);
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(executions,1);
+    assert.equal(store.list()[0].result,'0102');
+  }finally{store.close();}
+});
