@@ -6,3 +6,4 @@
 - `python3 scripts/release-store.py plan` 预览；`clean` 执行。`plan --report <路径>` 输出带大小的清单。未知条目保留，使用版数据和历史 QA 截图在轮转范围以外。
 - 从干净提交构建 DMG 后，执行 `python3 scripts/release-store.py checkpoint <构建目录名> --summary "变更摘要"`。归档前核对源码与校验值，运行 npm test 和包内无窗口回归。镜像、构建信息与测试日志放入 `release/checkpoints/`，保留最近三个。
 - 首次正式发布创建对应 Git 标签，执行 `python3 scripts/release-store.py milestone <构建目录名> --tag v1.0.0 --summary "首版发布"`（以实际版本替换示例）。`release/milestones/<标签>/` 独立保留。发布时上传 DMG、build.json、tests.log 到同标签的 GitHub Release 或指定外部存储，再下载 DMG 并比对 build.json 中的 SHA-256。
+- 候选版沿用里程碑归档，使用 `vX.Y.Z-rc.N` 标签，在 GitHub 标记为预发行版。[v0.1.0-rc.1 说明](v0.1.0-rc.1.md)

@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 if(process.platform!=='darwin')throw Error('macOS packaging requires macOS.');
 const root=fileURLToPath(new URL('../',import.meta.url));
 const pkg=JSON.parse(await readFile(join(root,'package.json'),'utf8'));
+const bundleVersion=pkg.version.split(/[-+]/,1)[0];
 const dist=join(root,'node_modules/electron/dist');
 if((await readFile(join(dist,'version'),'utf8')).trim()!==pkg.devDependencies.electron)
   throw Error('Electron runtime version differs from the pinned version.');
@@ -60,7 +61,7 @@ try{
   const plist=join(bundle,'Contents/Info.plist');
   for(const [key,value] of Object.entries({CFBundleIdentifier:'com.grainrain.ohmyworkbench.preview',
     CFBundleName:title,CFBundleDisplayName:title,CFBundleIconFile:'Workbench.icns',
-    CFBundleShortVersionString:pkg.version,CFBundleVersion:pkg.version})){
+    CFBundleShortVersionString:bundleVersion,CFBundleVersion:bundleVersion})){
     execFileSync('plutil',['-replace',key,'-string',value,plist]);
   }
   execFileSync('codesign',['--force','--deep','--sign','-',bundle],{stdio:'inherit'});

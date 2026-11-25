@@ -1,6 +1,6 @@
 # macOS 预览版使用说明
 
-当前前端重构预览面向 Apple Silicon。[打开 Us3l7n 应用](<../release/macos-arm64-Us3l7n/Oh My Workbench.app>)。从访达打开应用可试用本轮重构。关闭窗口后可从菜单栏重新打开，选择退出会结束应用及后台任务执行。[日程连续横移验收](qa/evidence/runtime-progress.md#日程连续横移) · [侧栏图标验收](qa/evidence/runtime-progress.md#同步侧栏品牌图标)
+当前候选版面向 Apple Silicon。[在 GitHub 下载 v0.1.0-rc.1](https://github.com/GrainRainAndy/oh-my-workbench/releases/tag/v0.1.0-rc.1)。关闭窗口后可从菜单栏重新打开，选择退出会结束应用及后台任务执行。[日程连续横移验收](qa/evidence/runtime-progress.md#日程连续横移) · [侧栏图标验收](qa/evidence/runtime-progress.md#同步侧栏品牌图标)
 
 在项目根目录运行 `npm run package:mac -- --keep-previous` 可重新打包并保留本机已有构建。出包时执行了 `codesign --verify --deep --strict`。本地应用使用 ad hoc 签名，Developer ID 签名和公证属于正式发布验收。
 

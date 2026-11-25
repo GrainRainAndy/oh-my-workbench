@@ -124,7 +124,7 @@ def promote(path, milestone, summary):
         raise ValueError("Promotion requires the clean source commit recorded at build time")
     if not meta["images"]:
         raise ValueError("Build with --dmg before promotion")
-    if milestone and (not re.fullmatch(r"v\d+\.\d+\.\d+", milestone) or
+    if milestone and (not re.fullmatch(r"v\d+\.\d+\.\d+(?:-rc\.[1-9]\d*)?", milestone) or
                       output("git","rev-parse",milestone+"^{commit}") != meta["commit"]):
         raise ValueError("Milestone requires a release tag at the source commit")
     base = STORE / ("milestones" if milestone else "checkpoints")
@@ -142,7 +142,7 @@ def promote(path, milestone, summary):
             shutil.copy2(path / filename, archive / filename)
             if digest(archive / filename) != meta["images"][filename]:
                 raise ValueError("Archived image mismatch")
-        tests = [["npm","test"],["npm","run","test:headless","--",str(path/APP)]]
+        tests = [["npm","test"],["npm","run","test:headless","--",str((path / APP).relative_to(ROOT))]]
         with (archive / "tests.log").open("w") as log:
             for cmd in tests:
                 subprocess.run(cmd,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,check=True)

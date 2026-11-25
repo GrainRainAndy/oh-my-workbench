@@ -4,9 +4,9 @@
 
 ## 试用
 
-Apple Silicon 用户可以从 [macOS 预览版说明](docs/preview-macos.md) 找到本地安装镜像、校验值和备份恢复步骤。从源码生成同类安装镜像可运行 `npm ci` 和 `npm run package:mac -- --dmg`。
+Apple Silicon 用户可以从 [GitHub Release](https://github.com/GrainRainAndy/oh-my-workbench/releases/tag/v0.1.0-rc.1) 下载 v0.1.0 的首个候选版与 SHA-256 校验文件。安装和备份恢复见 [macOS 预览版说明](docs/preview-macos.md)。从源码生成安装镜像可运行 `npm ci` 和 `npm run package:mac -- --dmg`。
 
-首次打开时选择「快捷入口」，右键「日程」并选择「在旁边打开」。拖动两个窗格之间的分隔线，可以观察时间表从一日切换到三日或一周。浅色与深色界面预览见[工程入口](docs/README.md#试用工作台)。
+首次打开时选择「快捷入口」，用黄色加号添加「日程」，再右键选择「在旁边打开」。拖动两个窗格之间的分隔线，可以切换时间表的列数。浅色与深色界面预览见[工程入口](docs/README.md#试用工作台)。
 
 ## 开发与验证
 
